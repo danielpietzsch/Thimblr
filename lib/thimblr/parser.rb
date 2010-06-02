@@ -160,8 +160,9 @@ module Thimblr
           when 'Posts'
             if @blocks['Posts']
               lastday = nil
-              repeat = @settings['PostsPerPage'].times.collect do |n|
-                if not (post = @posts.advance).nil?
+              repeat = []
+              @settings['PostsPerPage'].times do |n|
+                unless (post = @posts.advance).nil?
                   post['}blocks'] = {}
                   post['}blocks']['Date'] = true # Always render Date on Post pages
                   thisday = Time.at(post['Timestamp'])
@@ -239,9 +240,9 @@ module Thimblr
                     post['}blocks']['TrackName'] = !post['TrackName'].empty?
                   end
                 
-                  post
+                  repeat << post
                 end
-              end.compact
+              end
             end
           # Post details
           when 'Title'
