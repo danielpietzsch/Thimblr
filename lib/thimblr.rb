@@ -8,6 +8,7 @@ require 'active_record'
 require 'thimblr/parser'
 require 'thimblr/importer'
 require 'models/imported_blog'
+require 'models/post'
 require 'rbconfig'
 require 'fileutils'
 
