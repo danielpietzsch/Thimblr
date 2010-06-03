@@ -160,7 +160,7 @@ module Thimblr
           when 'Posts'
             if @blocks['Posts']
               lastday = nil
-              repeat = []
+              posts = []
               @settings['PostsPerPage'].times do |n|
                 unless (post = @posts.advance).nil?
                   post['}blocks'] = {}
@@ -240,7 +240,7 @@ module Thimblr
                     post['}blocks']['TrackName'] = !post['TrackName'].empty?
                   end
                 
-                  repeat << post
+                  posts << post
                 end
               end
             end
@@ -266,7 +266,7 @@ module Thimblr
           when 'Caption'
             blocks['Caption'] = !constants['Caption'].empty?
           when 'SearchPage'
-            repeat = @searchresults if blocks['SearchPage']
+            posts = @searchresults if blocks['SearchPage']
           # Quote Posts
           when 'Source'
             blocks['Source'] = !constants['Source'].empty?
@@ -278,7 +278,7 @@ module Thimblr
           when 'Lines'
             alt = {true => 'odd',false => 'even'}
             iseven = false
-            repeat = constants['Lines'].collect do |line|
+            posts = constants['Lines'].collect do |line|
               parts = line.to_a[0]
               {"Line" => parts[1],"Label" => parts[0],"Alt" => alt[iseven = !iseven]}
             end
@@ -293,10 +293,10 @@ module Thimblr
               blocks['HasTags'] = true
             end
           when 'Tags'
-            repeat = constants['Tags'].collect do |tag|
+            posts = constants['Tags'].collect do |tag|
               {"Tag" => tag,"URLSafeTag" => tag.gsub(/[^a-zA-Z]/,"_").downcase,"TagURL" => "/thimblr/tagged/#{CGI.escape(tag)}","ChronoTagURL" => "/thimblr/tagged/#{CGI.escape(tag)}"} # TODO: ChronoTagURL
             end
-            blocks['Tags'] = repeat.length > 0
+            blocks['Tags'] = posts.length > 0
             constants['Tags'] = nil
           # Groups
           when 'GroupMembers'
@@ -304,17 +304,17 @@ module Thimblr
               blocks['GroupMembers'] = true
             end
           when 'GroupMember'
-            repeat = constants['GroupMembers'].collect do |groupmember|
+            posts = constants['GroupMembers'].collect do |groupmember|
               Hash[*groupmember.collect{ |key,value| ["GroupMember#{key}",value] }.flatten]
             end
-            blocks['GroupMember'] = repeat.length > 0
+            blocks['GroupMember'] = posts.length > 0
             constants['GroupMembers'] = nil
           # TODO: Day Pages
           # TODO: Tag Pages
           end
         
           # Process away!
-          (repeat || [constants]).collect do |consts|
+          (posts || [constants]).collect do |consts|
             if (blocks[blockname] ^ inv) or consts['Type'] == blockname
               parse(content,blocks,(constants.merge consts))
             end
