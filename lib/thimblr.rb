@@ -4,10 +4,28 @@ require 'json'
 require 'digest/md5'
 require 'pathname'
 require 'launchy'
+require 'active_record'
 require 'thimblr/parser'
 require 'thimblr/importer'
+require 'models/imported_blog'
 require 'rbconfig'
 require 'fileutils'
+
+# Database connection and configuration #################
+
+ActiveRecord::Base.establish_connection(
+  :adapter => "postgresql",
+  :database => "thimblr",
+  :encoding => "UTF8",
+  :username => "developer",
+  :password => "password",
+  :host => "localhost",
+  :port => "5432"
+)
+
+ActiveRecord::Base.logger = Logger.new(STDOUT)
+
+##########################################################
 
 class Thimblr::Application < Sinatra::Base
   Editors = {
