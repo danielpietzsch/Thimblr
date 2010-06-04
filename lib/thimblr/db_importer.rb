@@ -17,6 +17,7 @@ module Thimblr
       blog = ImportedBlog.find_or_create_by_name(xml.search('tumblelog')[0]['name']) do |blog|
         blog.title = xml.search('tumblelog')[0]['title']
         blog.description = xml.search('tumblelog')[0].content
+        # TODO remove (Google Analytics) <script> tags
       end
       
       posts_to_import = xml.search('posts post')
