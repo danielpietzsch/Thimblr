@@ -38,38 +38,25 @@ module Thimblr
           post.height         = post_to_import['height'] # photo posts only
           post.imported_blog  = blog
           
-          # FIXME importing tags needs to be fixed
-          # FIXME photo urls
-          post.content = Hash.new          
+          post.content = Hash.new
+
+          # import all content, such as title, body etc.
           post_to_import.children.each do |child|
-            post.content[child.name.to_sym] = child.content
+            post.content[child.name.to_sym] = child.content unless child.name == 'tag' or child.name == 'photo-url'
           end
+          
+          # special handling for tags and photo urls
+          post.content[:tags] = post_to_import.search('tag').collect { |tag| tag.content }
+          
+          post_to_import.search('photo-url').each do |photo|
+            post.content[:"photo_url_#{photo['max-width']}"] = photo.content
+          end
+          
         end
         
-        # 'Tags' => post_to_import.search('tag').collect{ |tag| tag.content }    
+        # OPTIMIZE not sure yet, if I need these
         # post['Type'] = "Text" if post['Type'] == "Regular"
         # post['Type'] = "Chat" if post['Type'] == "Conversation"
-    
-        # post.store('Title', post_to_import.search("#{post_to_import['type']}-title")[0].content) rescue nil
-        # post.store('Caption',post_to_import.search("#{post_to_import['type']}-caption")[0].content) rescue nil
-        # post.store('LinkURL',post_to_import.search("#{post_to_import['type']}-link-url")[0].content) rescue nil
-        # post.store('Source',post_to_import.search("#{post_to_import['type']}-source")[0].content) rescue nil
-    
-        # case post['Type']
-        # when "Photo"
-        #   post_to_import.search('photo-url').each do |photo|
-        #     post["PhotoURL-#{photo['max-width']}"] = photo.content
-        #   end
-        # when "Link"
-        #   begin
-        #     post['Name'] = post_to_import.search("link-text")[0].content
-        #   rescue
-        #   end
-        # when "Video"
-        #   post['Player'] = post_to_import.search("video-player")[0].content
-        # when "Text"
-        #   post['Body'] = post_to_import.search("regular-body")[0].content
-        # end
       end
       
       # Pages
