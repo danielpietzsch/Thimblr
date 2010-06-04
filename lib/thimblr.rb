@@ -6,7 +6,7 @@ require 'pathname'
 require 'launchy'
 require 'active_record'
 require 'thimblr/parser'
-require 'thimblr/importer'
+require 'thimblr/db_importer'
 require 'models/imported_blog'
 require 'models/post'
 require 'rbconfig'
@@ -181,14 +181,11 @@ class Thimblr::Application < Sinatra::Base
 
   # Downloads feed data from a tumblr site
   get %r{/import/([a-zA-Z0-9-]+)} do |username|
-    begin
-      data = Thimblr::Import.username(username)
-      open(File.join(settings.data,"#{username}.yml"),'w') do |f|
-        f.write data
-      end
-    rescue Exception => e
-      halt 404, e.message
-    end
+    # begin
+      data = Thimblr::DBImport.username(username)
+    # rescue Exception => e
+    #   halt 404, e.message
+    # end
     "Imported as '#{username}'"
   end
 
