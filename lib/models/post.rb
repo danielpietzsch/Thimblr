@@ -4,7 +4,7 @@ class Post < ActiveRecord::Base
                   :unix_timestamp, :format, :reblog_key,
                   :slug, :audio_plays, :width, :height
                   
-  serialize :content
+  serialize :content, Hash
   
   belongs_to :imported_blog
 end

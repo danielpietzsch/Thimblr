@@ -36,8 +36,13 @@ module Thimblr
           post.width          = post_to_import['width'] # photo posts only
           post.height         = post_to_import['height'] # photo posts only
           post.imported_blog  = blog
-
-          post.content = post_to_import.content
+          
+          # FIXME importing tags needs to be fixed
+          # FIXME photo urls
+          post.content = Hash.new          
+          post_to_import.children.each do |child|
+            post.content[child.name.to_sym] = child.content
+          end
         end
         
         # 'Tags' => post_to_import.search('tag').collect{ |tag| tag.content }    
