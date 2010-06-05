@@ -9,6 +9,7 @@ require 'thimblr/parser'
 require 'thimblr/db_importer'
 require 'models/imported_blog'
 require 'models/post'
+require 'models/page'
 require 'rbconfig'
 require 'fileutils'
 
