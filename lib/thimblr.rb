@@ -98,7 +98,7 @@ class Thimblr::Application < Sinatra::Base
   end
 
   get '/' do
-    redirect 'index.html'
+    erb :index
   end
 
   get '/menu' do
@@ -107,6 +107,12 @@ class Thimblr::Application < Sinatra::Base
 
   get '/help' do
     erb :help
+  end
+
+  post '/preview' do
+    "Hello Preview."
+    "Blog Data ID: #{params[:blog_data_id]}"
+    # "Theme Code: <pre><code>#{params[:theme_code][0..100]}</code></pre>"
   end
 
   get '/theme.set' do
@@ -182,11 +188,11 @@ class Thimblr::Application < Sinatra::Base
 
   # Downloads feed data from a tumblr site
   get %r{/import/([a-zA-Z0-9-]+)} do |username|
-    # begin
-      data = Thimblr::DBImport.username(username)
-    # rescue Exception => e
-    #   halt 404, e.message
-    # end
+    begin
+      Thimblr::DBImport.username(username)
+    rescue Exception => e
+      halt 404, e.message
+    end
     "Imported as '#{username}'"
   end
 
@@ -194,7 +200,8 @@ class Thimblr::Application < Sinatra::Base
     request.cookies['data'] ||= "demo"
     if request.env['REQUEST_PATH'] =~ /^\/thimblr/
       if File.exists?(File.join(settings.themes,"#{request.cookies['theme']}.html"))
-        data = File.exists?(File.join(settings.data,"#{request.cookies['data']}.yml")) ? "#{settings.data}/#{request.cookies['data']}.yml" : File.join(settings.config,"demo.yml")
+        data = ImportedBlog.find_by_title(request.cookies['data']) || ImportedBlog.find_by_title('demo')
+        # data = File.exists?(File.join(settings.data,"#{request.cookies['data']}.yml")) ? "#{settings.data}/#{request.cookies['data']}.yml" : File.join(settings.config,"demo.yml")
         @parser = Thimblr::Parser.new(data,"#{settings.themes}/#{request.cookies['theme']}.html",settings.tumblr)
       else
         redirect '/help'
