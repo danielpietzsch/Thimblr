@@ -4,23 +4,30 @@ require 'uri'
 
 module Thimblr
   class DBImport
-    def self.username(username)
-      
+    
+    def self.username(username)  
       begin
-        # 15 posts is enough. It's also the maximum of posts on the first page
+        # 15 posts is enough. It's also the maximum of posts per page
         xml = Nokogiri::XML(open("http://#{username}.tumblr.com/api/read?num=15"))
       rescue OpenURI::HTTPError
         raise "Username not found"
       end
       
-      blog = ImportedBlog.find_or_create_by_name(xml.search('tumblelog')[0]['name']) do |blog|
+      @blog = ImportedBlog.find_or_create_by_name(xml.search('tumblelog')[0]['name']) do |blog|
         blog.title = xml.search('tumblelog')[0]['title']
         blog.description = xml.search('tumblelog')[0].content
         # TODO remove (Google Analytics) <script> tags!?
       end
       
-      posts_to_import = xml.search('posts post')
-      
+      import_posts(xml.search('posts post'))     
+      import_pages(username)
+    end # of self.username
+    
+    ######################
+    protected
+    ######################
+    
+    def self.import_posts(posts_to_import)
       posts_to_import.each do |post_to_import|        
         # This works, because post-ids are unique across all Tumblr blogs. However, this is not guaranteed forever.
         post = Post.find_or_create_by_postid(post_to_import['id']) do |post|
@@ -36,7 +43,7 @@ module Thimblr
           post.audio_plays    = post_to_import['audio-plays'] # audio posts only
           post.width          = post_to_import['width'] # photo posts only
           post.height         = post_to_import['height'] # photo posts only
-          post.imported_blog  = blog
+          post.imported_blog  = @blog
           
           post.content = Hash.new
 
@@ -58,8 +65,9 @@ module Thimblr
         # post['Type'] = "Text" if post['Type'] == "Regular"
         # post['Type'] = "Chat" if post['Type'] == "Conversation"
       end
-      
-      # Pages
+    end
+    
+    def self.import_pages(username)
       begin
         xml = Nokogiri::XML(open("http://#{username}.tumblr.com/api/pages"))
         
@@ -72,12 +80,13 @@ module Thimblr
             page.link_title      = page_to_import['link-title']
             page.render_in_theme = page_to_import['render-in-theme']
             page.body            = page_to_import.content
-            page.imported_blog   = blog
+            page.imported_blog   = @blog
           end    
         end
       rescue OpenURI::HTTPError
         # No Pages found. Didn't import anything.
       end
-    end
-  end
-end
+    end # of import_pages
+    
+  end # of class DBImport
+end # of module Thimblr
