@@ -68,9 +68,10 @@ module Thimblr
       }
     end
     
-    def initialize(theme_code, blog_name = "demo", settings = {})
+    def initialize(theme_code, blog_name = "demo")
       blog = ImportedBlog.find_by_name(blog_name)
       template = YAML::load(open("config/demo.yml"))
+      
       @apid = 0
       @posts = ArrayIO.new(template['Posts'])
       @pages = template['Pages']
@@ -104,7 +105,8 @@ module Thimblr
     end
   
     # Renders a tumblr page from the stored template
-    def render_posts(page = 1)
+    def render_posts
+      page = 1 # OPTIMIZE get rid of this
       blocks = @blocks
       constants = @constants
       constants['TotalPages'] = (@posts.length / Defaults['PostsPerPage'].to_i).ceil
@@ -115,9 +117,7 @@ module Thimblr
       constants['NextPage'] = page + 1
       constants['CurrentPage'] = page
       constants['PreviousPage'] = page - 1
-    
-      # ffw thru posts array if required
-      @posts.seek((page - 1) * Defaults['PostsPerPage'].to_i)
+
       parse(@theme,blocks,constants)
     end
   

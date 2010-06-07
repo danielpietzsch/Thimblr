@@ -52,7 +52,7 @@ class Thimblr::Application < Sinatra::Base
 
   post '/preview' do
     parser = Thimblr::Parser.new(params[:theme_code])
-    parser.render_posts(1)
+    parser.render_posts
   end
 
 end
