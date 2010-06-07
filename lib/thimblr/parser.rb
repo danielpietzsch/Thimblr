@@ -73,7 +73,7 @@ module Thimblr
       template = YAML::load(open("config/demo.yml"))
       
       @apid = 0
-      @posts = ArrayIO.new(template['Posts'])
+      @posts = blog.posts  # ArrayIO.new(template['Posts'])
       @pages = template['Pages']
       
       load_default_data
@@ -192,12 +192,48 @@ module Thimblr
           when 'Posts'
             if @blocks['Posts']
               lastday = nil
-              posts = []
-              Defaults['PostsPerPage'].times do |n|
-                unless (post = @posts.advance).nil?
+              
+              posts = Array.new
+              
+              @posts.each_with_index do |db_post, n|
+                
+                  # quick and dirty convertion
+                  # TODO clean this up
+                  post = Hash.new
+                  post['Type'] = db_post.post_type
+                  post['PostId'] = db_post.postid
+                  post['Timestamp'] = db_post.unix_timestamp
+                  post['tags'] = db_post.content[:tags]
+                  
+                  # db_post.content.each do |key, value|
+                  #   post[key.to_s] = value
+                  # end
+                  
+                  post['Source'] = db_post.content[:'quote-source']
+                  post['Quote'] = db_post.content[:'quote-text']
+                  
+                  post['Caption'] = db_post.content[:'photo-caption']
+                  post['PhotoURL-75sq'] = db_post.content[:'photo_url_75']
+                  post['PhotoURL-100'] = db_post.content[:'photo_url_100']
+                  post['PhotoURL-250'] = db_post.content[:'photo_url_250']
+                  post['PhotoURL-400'] = db_post.content[:'photo_url_400']
+                  post['PhotoURL-500'] = db_post.content[:'photo_url_500']
+                  post['PhotoURL-1280'] = db_post.content[:'photo_url_1280']
+                  
+                  post['URL'] = db_post.content[:'link-url']
+                  post['Name'] = db_post.content[:'link-text']
+                  post['Description'] = db_post.content[:'link-description']
+                  
+                  post['Lines'] = db_post.content[:'conversation-text']
+                  
+                  # puts db_post.content.inspect
+                  
+                  ###############################
+                  
+                  
                   post['}blocks'] = {}
                   post['}blocks']['Date'] = true # Always render Date on Post pages
-                  thisday = Time.at(post['Timestamp'])
+                  thisday = Time.at(db_post.unix_timestamp.to_i)
                   post['}blocks']['NewDayDate'] = thisday.strftime("%Y-%m-%d") != lastday
                   post['}blocks']['SameDayDate'] = !post['}blocks']['NewDayDate']
                 
@@ -228,8 +264,8 @@ module Thimblr
                   post['Beats'] = (thisday.usec / 1000).round
                   post['TimeAgo'] = thisday.ago
                 
-                  post['Permalink'] = "http://127.0.0.1:4567/thimblr/post/#{post['PostId']}/" # TODO: Port number
-                  post['ShortURL'] = post['Permalink'] # No need for a real short URL
+                  post['Permalink'] = "http://127.0.0.1:4567/thimblr/post/#{db_post.postid}/" # TODO: Port number
+                  post['ShortURL'] = db_post.url # No need for a real short URL
                   post['TagsAsClasses'] = (constants['Tags'] || []).collect{ |tag| tag.gsub(/[^a-z]/i,"_").downcase }.join(" ")
                   post['}numberonpage'] = n + 1 # use a } at the begining so the theme can't access it
                 
@@ -253,27 +289,28 @@ module Thimblr
                 
                   post['Title'] ||= "" # This prevents the site's title being used when it shouldn't be
                 
-                  case post['Type']
+                  case db_post.post_type
                   when 'Photo'
-                    post['PhotoAlt'] = CGI.escapeHTML(post['Caption'])
-                    if !post['LinkURL'].nil?
+                    post['PhotoAlt'] = CGI.escapeHTML(db_post.content[:'photo-caption'])
+                    post['LinkURL'] = db_post.content['photo-link-url']
+                    unless post['LinkURL'].nil?
                       post['LinkOpenTag'] = "<a href=\"#{post['LinkURL']}\">"
                       post['LinkCloseTag'] = "</a>"
                     end
                   when 'Audio'
-                    post['AudioPlayerBlack'] = audio_player(post['AudioFile'],"black")
-                    post['AudioPlayerGrey'] = audio_player(post['AudioFile'],"grey")
-                    post['AudioPlayerWhite'] = audio_player(post['AudioFile'],"white")
-                    post['AudioPlayer'] = audio_player(post['AudioFile'])
-                    post['}blocks']['ExternalAudio'] = !(post['AudioFile'] =~/^http:\/\/(?:www\.)?tumblr\.com/)
-                    post['AudioFile'] = nil # We don't want this tag to be parsed if it happens to be in there
-                    post['}blocks']['Artist'] = !post['Artist'].empty?
-                    post['}blocks']['Album'] = !post['Album'].empty?
-                    post['}blocks']['TrackName'] = !post['TrackName'].empty?
+                    # TODO
+                    # post['AudioPlayerBlack'] = audio_player(post['AudioFile'],"black")
+                    #                     post['AudioPlayerGrey'] = audio_player(post['AudioFile'],"grey")
+                    #                     post['AudioPlayerWhite'] = audio_player(post['AudioFile'],"white")
+                    #                     post['AudioPlayer'] = audio_player(post['AudioFile'])
+                    #                     post['}blocks']['ExternalAudio'] = !(post['AudioFile'] =~/^http:\/\/(?:www\.)?tumblr\.com/)
+                    #                     post['AudioFile'] = nil # We don't want this tag to be parsed if it happens to be in there
+                    #                     post['}blocks']['Artist'] = !post['Artist'].empty?
+                    #                     post['}blocks']['Album'] = !post['Album'].empty?
+                    #                     post['}blocks']['TrackName'] = !post['TrackName'].empty?
                   end
                 
                   posts << post
-                end
               end
             end
           # Post details
