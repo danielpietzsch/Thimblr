@@ -14,42 +14,74 @@ require 'time'
 
 module Thimblr
   class Parser
-    BackCompatibility = {"Type" => {
-      "Regular" => "Text",
-      "Conversation" => "Chat"
-    }}
+    BackCompatibility = {"Type" => { "Regular"      => "Text",
+                                     "Conversation" => "Chat" }
+    }
+                        
     Defaults = {
-      'PostsPerPage' => 10
+      'PostsPerPage'       => 10,
+      'AskLabel'           => "Ask me anything",
+      'SubmissionsEnabled' => true,
+      'TwitterUsername'    => "tumblr",
+      'PortraitURL-16'     => "http://30.media.tumblr.com/avatar_013241641371_16.png",
+      'PortraitURL-24'     => "http://30.media.tumblr.com/avatar_013241641371_24.png",
+      'PortraitURL-30'     => "http://30.media.tumblr.com/avatar_013241641371_30.png",
+      'PortraitURL-40'     => "http://30.media.tumblr.com/avatar_013241641371_40.png",
+      'PortraitURL-48'     => "http://30.media.tumblr.com/avatar_013241641371_48.png",
+      'PortraitURL-64'     => "http://30.media.tumblr.com/avatar_013241641371_64.png",
+      'PortraitURL-96'     => "http://30.media.tumblr.com/avatar_013241641371_96.png",
+      'PortraitURL-128'    => "http://30.media.tumblr.com/avatar_013241641371_128.png"
     }
     
-    def initialize(theme_code, data_file = "config/demo.yml", settings = {})
-      template = YAML::load(open(data_file))
-      @settings = Defaults.merge settings
-      @apid = 0
-      @posts = ArrayIO.new(template['Posts'])
-      @groupmembers = template['GroupMembers']
-      @pages = template['Pages']
-      @following = template['Following']
-      @followed = template['Followed']
-      # Add all suitable @template options to @constants
-      @constants = template.delete_if { |key,val| ["Pages","Following","Posts","SubmissionsEnabled","Followed"].include? key }
-      @constants['RSS'] = '/thimblr/rss'
-      @constants['Favicon'] = '/favicon.ico'
+    # loads default data, no matter what the sample data is.
+    # this gives data from imported blogs some more stuff, since an un-authenticated API call doesn't reveal all data
+    def load_default_data
+      @following    = YAML::load(open("config/following.yml"))
+      @followed     = YAML::load(open("config/followed.yml"))
+      @groupmembers = YAML::load(open("config/groupmembers.yml"))
+      
+      @constants = Hash.new
+      @constants['TwitterUsername'] = Defaults['TwitterUsername']
+      @constants['RSS']             = '/thimblr/rss'
+      @constants['Favicon']         = '/favicon.ico'
+      @constants['AskLabel']        = Defaults['AskLabel']
+      
+      @constants['PortraitURL-16']  = Defaults['PortraitURL-16']
+      @constants['PortraitURL-24']  = Defaults['PortraitURL-24']
+      @constants['PortraitURL-30']  = Defaults['PortraitURL-30']
+      @constants['PortraitURL-40']  = Defaults['PortraitURL-40']
+      @constants['PortraitURL-48']  = Defaults['PortraitURL-48']
+      @constants['PortraitURL-64']  = Defaults['PortraitURL-64']
+      @constants['PortraitURL-96']  = Defaults['PortraitURL-96']
+      @constants['PortraitURL-128'] = Defaults['PortraitURL-128']
+      
       @blocks = { # These are the defaults
-        'Twitter'            => !@constants['TwitterUsername'].empty?,
-        'Description'        => !@constants['Description'].empty?,
-        'Pagination'         => (@posts.length > @settings['PostsPerPage'].to_i),
-        'SubmissionsEnabled' => template['SubmissionsEnabled'],
-        'AskEnabled'         => !@constants['AskLabel'].empty?,
+        'Twitter'            => true,
+        'Description'        => true,
+        'Pagination'         => (@posts.length > Defaults['PostsPerPage']),
+        'SubmissionsEnabled' => Defaults['SubmissionsEnabled'],
+        'AskEnabled'         => true,
         'HasPages'           => (@pages.length > 0 rescue false),
         'Following'          => (@following.length > 0 rescue false),
         'Followed'           => (@followed.length > 0 rescue false),
         'More'               => true
       }
+    end
     
-      # if theme_file and File.exists?(theme_file)
-      #   set_theme(open(theme_file).read)
-      # end
+    def initialize(theme_code, blog_name = "demo", settings = {})
+      blog = ImportedBlog.find_by_name(blog_name)
+      template = YAML::load(open("config/demo.yml"))
+      @apid = 0
+      @posts = ArrayIO.new(template['Posts'])
+      @pages = template['Pages']
+      
+      load_default_data
+      
+      @constants['Title'] = blog.title
+      @constants['Description'] = blog.description
+      @constants['MetaDescription'] = CGI.escapeHTML(blog.description)
+      
+      @blocks['Description'] = false if blog.description.blank?
       
       set_theme(theme_code)
     end
@@ -69,15 +101,13 @@ module Thimblr
           @blocks[meta[2]+"Image"] = true if meta[1] == "image"
         end
       end
-    
-      @constants['MetaDescription'] = CGI.escapeHTML(@constants['Description'])
     end
   
     # Renders a tumblr page from the stored template
     def render_posts(page = 1)
       blocks = @blocks
       constants = @constants
-      constants['TotalPages'] = (@posts.length / @settings['PostsPerPage'].to_i).ceil
+      constants['TotalPages'] = (@posts.length / Defaults['PostsPerPage'].to_i).ceil
       blocks['PreviousPage'] = page > 1
       blocks['NextPage'] = page < constants['TotalPages']
       blocks['Posts'] = true
@@ -87,7 +117,7 @@ module Thimblr
       constants['PreviousPage'] = page - 1
     
       # ffw thru posts array if required
-      @posts.seek((page - 1) * @settings['PostsPerPage'].to_i)
+      @posts.seek((page - 1) * Defaults['PostsPerPage'].to_i)
       parse(@theme,blocks,constants)
     end
   
@@ -163,7 +193,7 @@ module Thimblr
             if @blocks['Posts']
               lastday = nil
               posts = []
-              @settings['PostsPerPage'].times do |n|
+              Defaults['PostsPerPage'].times do |n|
                 unless (post = @posts.advance).nil?
                   post['}blocks'] = {}
                   post['}blocks']['Date'] = true # Always render Date on Post pages

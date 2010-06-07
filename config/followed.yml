@@ -1,0 +1,15 @@
+# Supplies a set of tumblr members that follow
+# Useful to provide this data for all accounts (i.e. imported data),
+# since a un-authenticated API call doesn't reveal this information
+
+- Name: staff
+  Title: Tumblr Staff
+  URL: http://staff.tumblr.com/
+  PortraitURL-16: "http://30.media.tumblr.com/avatar_013241641371_16.png"
+  PortraitURL-24: "http://30.media.tumblr.com/avatar_013241641371_24.png"
+  PortraitURL-30: "http://30.media.tumblr.com/avatar_013241641371_30.png"
+  PortraitURL-40: "http://30.media.tumblr.com/avatar_013241641371_40.png"
+  PortraitURL-48: "http://30.media.tumblr.com/avatar_013241641371_48.png"
+  PortraitURL-64: "http://30.media.tumblr.com/avatar_013241641371_64.png"
+  PortraitURL-96:  "http://30.media.tumblr.com/avatar_013241641371_96.png"
+  PortraitURL-128: "http://30.media.tumblr.com/avatar_013241641371_128.png"
