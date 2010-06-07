@@ -3,7 +3,7 @@ require 'nokogiri'
 require 'uri'
 
 module Thimblr
-  class DBImport
+  class Import
     
     def self.username(username)  
       begin

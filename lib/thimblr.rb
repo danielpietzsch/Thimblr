@@ -5,8 +5,7 @@ require 'sinatra'
 # require 'pathname'
 require 'active_record'
 require 'thimblr/parser'
-# require 'thimblr/db_parser'
-require 'thimblr/db_importer'
+require 'thimblr/importer'
 require 'models/imported_blog'
 require 'models/post'
 require 'models/page'
@@ -53,7 +52,7 @@ class Thimblr::Application < Sinatra::Base
   # Downloads feed data from a tumblr site
   get %r{/import/([a-zA-Z0-9-]+)} do |username|
     begin
-      Thimblr::DBImport.username(username)
+      Thimblr::Import.username(username)
     rescue Exception => e
       halt 404, e.message
     end
