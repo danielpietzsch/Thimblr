@@ -22,7 +22,7 @@ module Thimblr
       'PostsPerPage' => 10
     }
     
-    def initialize(data_file,theme_file = nil,settings = {})
+    def initialize(theme_code, data_file = "config/demo.yml", settings = {})
       template = YAML::load(open(data_file))
       @settings = Defaults.merge settings
       @apid = 0
@@ -47,9 +47,11 @@ module Thimblr
         'More'               => true
       }
     
-      if theme_file and File.exists?(theme_file)
-        set_theme(open(theme_file).read)
-      end
+      # if theme_file and File.exists?(theme_file)
+      #   set_theme(open(theme_file).read)
+      # end
+      
+      set_theme(theme_code)
     end
   
     def set_theme(theme_html)
@@ -368,11 +370,11 @@ module Thimblr
     end
   end
   
-  # class Time < Time
-  #   def ago
-  #     "some time ago"
-  #   end
-  # end
+  class Time < Time
+    def ago
+      "some time ago"
+    end
+  end
 end
 
 class NilClass
