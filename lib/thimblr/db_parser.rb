@@ -13,7 +13,7 @@ require 'cgi'
 require 'time'
 
 module Thimblr
-  class Parser
+  class DBParser
     BackCompatibility = {"Type" => {
       "Regular" => "Text",
       "Conversation" => "Chat"
@@ -22,34 +22,36 @@ module Thimblr
       'PostsPerPage' => 10
     }
     
-    def initialize(data_file,theme_file = nil,settings = {})
-      template = YAML::load(open(data_file))
+    def initialize(blog_data_id, theme_code, settings = {})
+      @blog = ImportedBlog.find(blog_data_id) # TODO fire off import from right here
+      
       @settings = Defaults.merge settings
       @apid = 0
-      @posts = ArrayIO.new(template['Posts'])
-      @groupmembers = template['GroupMembers']
-      @pages = template['Pages']
-      @following = template['Following']
-      @followed = template['Followed']
+      @posts = @blog.posts
+      # @groupmembers = template['GroupMembers']
+      @pages = @blog.pages
+      # @following = template['Following']
+      # @followed = template['Followed']
       # Add all suitable @template options to @constants
-      @constants = template.delete_if { |key,val| ["Pages","Following","Posts","SubmissionsEnabled","Followed"].include? key }
-      @constants['RSS'] = '/thimblr/rss'
-      @constants['Favicon'] = '/favicon.ico'
-      @blocks = { # These are the defaults
-        'Twitter'            => !@constants['TwitterUsername'].empty?,
-        'Description'        => !@constants['Description'].empty?,
-        'Pagination'         => (@posts.length > @settings['PostsPerPage'].to_i),
-        'SubmissionsEnabled' => template['SubmissionsEnabled'],
-        'AskEnabled'         => !@constants['AskLabel'].empty?,
-        'HasPages'           => (@pages.length > 0 rescue false),
-        'Following'          => (@following.length > 0 rescue false),
-        'Followed'           => (@followed.length > 0 rescue false),
-        'More'               => true
-      }
+      @constants = Hash.new
+      # @constants = template.delete_if { |key,val| ["Pages","Following","Posts","SubmissionsEnabled","Followed"].include? key }
+      # @constants['RSS'] = '/thimblr/rss'
+      #       @constants['Favicon'] = '/favicon.ico'
+            @blocks = { # These are the defaults
+              'Twitter'            => false,
+              'Description'        => true,
+              'Pagination'         => (@posts.length > @settings['PostsPerPage'].to_i),
+              'SubmissionsEnabled' => false,
+              'AskEnabled'         => false,
+              'HasPages'           => (@pages.length > 0 rescue false),
+              'Following'          => (@following.length > 0 rescue false),
+              'Followed'           => (@followed.length > 0 rescue false),
+              'More'               => true
+            }
     
-      if theme_file and File.exists?(theme_file)
-        set_theme(open(theme_file).read)
-      end
+      set_theme(theme_code)
+      
+      render_posts
     end
   
     def set_theme(theme_html)
@@ -68,7 +70,7 @@ module Thimblr
         end
       end
     
-      @constants['MetaDescription'] = CGI.escapeHTML(@constants['Description'])
+      @constants['MetaDescription'] = CGI.escapeHTML(@blog.description)
     end
   
     # Renders a tumblr page from the stored template
@@ -85,7 +87,7 @@ module Thimblr
       constants['PreviousPage'] = page - 1
     
       # ffw thru posts array if required
-      @posts.seek((page - 1) * @settings['PostsPerPage'].to_i)
+      # @posts.seek((page - 1) * @settings['PostsPerPage'].to_i)
       parse(@theme,blocks,constants)
     end
   
@@ -161,8 +163,7 @@ module Thimblr
             if @blocks['Posts']
               lastday = nil
               posts = []
-              @settings['PostsPerPage'].times do |n|
-                unless (post = @posts.advance).nil?
+              @posts.each do |post|
                   post['}blocks'] = {}
                   post['}blocks']['Date'] = true # Always render Date on Post pages
                   thisday = Time.at(post['Timestamp'])
@@ -241,7 +242,6 @@ module Thimblr
                   end
                 
                   posts << post
-                end
               end
             end
           # Post details
@@ -368,11 +368,11 @@ module Thimblr
     end
   end
   
-  # class Time < Time
-  #   def ago
-  #     "some time ago"
-  #   end
-  # end
+  class Time < Time
+    def ago
+      "some time ago"
+    end
+  end
 end
 
 class NilClass

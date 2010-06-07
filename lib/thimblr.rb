@@ -6,6 +6,7 @@ require 'pathname'
 require 'launchy'
 require 'active_record'
 require 'thimblr/parser'
+require 'thimblr/db_parser'
 require 'thimblr/db_importer'
 require 'models/imported_blog'
 require 'models/post'
@@ -110,9 +111,10 @@ class Thimblr::Application < Sinatra::Base
   end
 
   post '/preview' do
-    "Hello Preview."
-    "Blog Data ID: #{params[:blog_data_id]}"
-    # "Theme Code: <pre><code>#{params[:theme_code][0..100]}</code></pre>"
+    puts "Hello Preview."
+    puts params[:blog_data_id]
+    
+    @parser = Thimblr::DBParser.new(params[:blog_data_id], params[:theme_code], settings.tumblr)
   end
 
   get '/theme.set' do
