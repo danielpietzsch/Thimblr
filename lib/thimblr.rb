@@ -50,6 +50,16 @@ class Thimblr::Application < Sinatra::Base
     erb :index
   end
 
+  # Downloads feed data from a tumblr site
+  get %r{/import/([a-zA-Z0-9-]+)} do |username|
+    begin
+      Thimblr::DBImport.username(username)
+    rescue Exception => e
+      halt 404, e.message
+    end
+    "Imported as '#{username}'"
+  end
+
   post '/preview' do
     parser = Thimblr::Parser.new(params[:theme_code])
     parser.render_posts
