@@ -195,6 +195,8 @@ module Thimblr
               
               posts = Array.new
               
+              puts @posts.length
+              
               @posts.each_with_index do |db_post, n|
                 
                   # quick and dirty convertion
@@ -205,20 +207,14 @@ module Thimblr
                   post['Timestamp'] = db_post.unix_timestamp
                   post['tags'] = db_post.content[:tags]
                   
+                  post['}blocks'] = {}
+                  
                   # db_post.content.each do |key, value|
                   #   post[key.to_s] = value
                   # end
                   
                   post['Source'] = db_post.content[:'quote-source']
                   post['Quote'] = db_post.content[:'quote-text']
-                  
-                  post['Caption'] = db_post.content[:'photo-caption']
-                  post['PhotoURL-75sq'] = db_post.content[:'photo_url_75']
-                  post['PhotoURL-100'] = db_post.content[:'photo_url_100']
-                  post['PhotoURL-250'] = db_post.content[:'photo_url_250']
-                  post['PhotoURL-400'] = db_post.content[:'photo_url_400']
-                  post['PhotoURL-500'] = db_post.content[:'photo_url_500']
-                  post['PhotoURL-1280'] = db_post.content[:'photo_url_1280']
                   
                   post['URL'] = db_post.content[:'link-url']
                   post['Name'] = db_post.content[:'link-text']
@@ -230,8 +226,40 @@ module Thimblr
                   
                   ###############################
                   
+                  case post['Type']
+                  when 'Photo'
+                    post['Caption'] = db_post.content[:'photo-caption']
+                    post['PhotoURL-75sq'] = db_post.content[:'photo_url_75']
+                    post['PhotoURL-100'] = db_post.content[:'photo_url_100']
+                    post['PhotoURL-250'] = db_post.content[:'photo_url_250']
+                    post['PhotoURL-400'] = db_post.content[:'photo_url_400']
+                    post['PhotoURL-500'] = db_post.content[:'photo_url_500']
+                    post['PhotoURL-1280'] = db_post.content[:'photo_url_1280']
+                    post['PhotoAlt'] = CGI.escapeHTML(db_post.content[:'photo-caption'])
+                    post['LinkURL'] = db_post.content[:'photo-link-url']
+                    unless post['LinkURL'].nil?
+                      post['LinkOpenTag'] = "<a href=\"#{post['LinkURL']}\">"
+                      post['LinkCloseTag'] = "</a>"
+                    end
+                  when 'Audio'
+                    # TODO
+                    post['Caption'] = db_post.content[:'audio-caption']
+                    post['AudioFile'] = "http://www.tumblr.com/audio_file/459260683/tumblr_ksc4i2SkVU1qz8ouq&color=FFFFFF"                    
+                    post['AudioPlayerBlack'] = audio_player(post['AudioFile'],"black")
+                    post['AudioPlayerGrey'] = audio_player(post['AudioFile'],"grey")
+                    post['AudioPlayerWhite'] = audio_player(post['AudioFile'],"white")
+                    post['AudioPlayer'] = audio_player(post['AudioFile'])
+                    post['}blocks']['ExternalAudio'] = !(post['AudioFile'] =~/^http:\/\/(?:www\.)?tumblr\.com/)
+                    post['AudioFile'] = nil # We don't want this tag to be parsed if it happens to be in there
+                    post['}blocks']['Artist'] = !post['Artist'].empty?
+                    post['}blocks']['Album'] = !post['Album'].empty?
+                    post['}blocks']['TrackName'] = !post['TrackName'].empty?
+                  end
                   
-                  post['}blocks'] = {}
+                  
+                  
+                  
+                  
                   post['}blocks']['Date'] = true # Always render Date on Post pages
                   thisday = Time.at(db_post.unix_timestamp.to_i)
                   post['}blocks']['NewDayDate'] = thisday.strftime("%Y-%m-%d") != lastday
@@ -288,27 +316,9 @@ module Thimblr
                   end
                 
                   post['Title'] ||= "" # This prevents the site's title being used when it shouldn't be
-                
-                  case db_post.post_type
-                  when 'Photo'
-                    post['PhotoAlt'] = CGI.escapeHTML(db_post.content[:'photo-caption'])
-                    post['LinkURL'] = db_post.content['photo-link-url']
-                    unless post['LinkURL'].nil?
-                      post['LinkOpenTag'] = "<a href=\"#{post['LinkURL']}\">"
-                      post['LinkCloseTag'] = "</a>"
-                    end
-                  when 'Audio'
-                    # TODO
-                    # post['AudioPlayerBlack'] = audio_player(post['AudioFile'],"black")
-                    #                     post['AudioPlayerGrey'] = audio_player(post['AudioFile'],"grey")
-                    #                     post['AudioPlayerWhite'] = audio_player(post['AudioFile'],"white")
-                    #                     post['AudioPlayer'] = audio_player(post['AudioFile'])
-                    #                     post['}blocks']['ExternalAudio'] = !(post['AudioFile'] =~/^http:\/\/(?:www\.)?tumblr\.com/)
-                    #                     post['AudioFile'] = nil # We don't want this tag to be parsed if it happens to be in there
-                    #                     post['}blocks']['Artist'] = !post['Artist'].empty?
-                    #                     post['}blocks']['Album'] = !post['Album'].empty?
-                    #                     post['}blocks']['TrackName'] = !post['TrackName'].empty?
-                  end
+                  
+                  puts "$$$$$$$$$$ POST"
+                  puts post.inspect
                 
                   posts << post
               end
@@ -338,7 +348,7 @@ module Thimblr
             posts = @searchresults if blocks['SearchPage']
           # Quote Posts
           when 'Source'
-            blocks['Source'] = !constants['Source'].empty?
+            blocks['Source'] = !post['Source'].empty?
           when 'Description'
             if !constants['Type'].nil?
               blocks['Description'] = !constants['Description'].empty?
@@ -347,7 +357,7 @@ module Thimblr
           when 'Lines'
             alt = {true => 'odd',false => 'even'}
             iseven = false
-            posts = constants['Lines'].collect do |line|
+            posts = post['Lines'].collect do |line|
               parts = line.to_a[0]
               {"Line" => parts[1],"Label" => parts[0],"Alt" => alt[iseven = !iseven]}
             end
