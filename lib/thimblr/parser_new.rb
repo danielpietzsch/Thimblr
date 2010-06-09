@@ -50,5 +50,11 @@ module Thimblr
       return @theme
     end
     
+    # Scans the whole theme and replaces a variable with the replacement provided
+    def replace_variable(var_name, replacement)
+      @theme.gsub!(/\{#{var_name}\}/i, replacement)
+      #TODO handle variable transformations
+    end
+    
   end # of class
 end # of module
