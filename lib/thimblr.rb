@@ -5,6 +5,7 @@ require 'sinatra'
 # require 'pathname'
 require 'active_record'
 require 'thimblr/parser'
+require 'thimblr/parser_new'
 require 'thimblr/importer'
 require 'models/imported_blog'
 require 'models/post'
@@ -60,8 +61,8 @@ class Thimblr::Application < Sinatra::Base
   end
 
   post '/preview' do
-    parser = Thimblr::Parser.new(params[:theme_code])
-    parser.render_posts
+    parser = Thimblr::ParserNew.new(params[:theme_code])
+    parser.render_index
   end
 
 end
