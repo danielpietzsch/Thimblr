@@ -50,6 +50,7 @@ module Thimblr
     
     def render_index
       parse_meta_options
+
       return @theme
     end
     
@@ -142,8 +143,10 @@ module Thimblr
             render_block(element['name'].gsub('image', 'if').titlecase.gsub(':', 'Not').gsub(/\W/, '') + "Image")
           end
         end
-                
       end # of meta_elements each
+      
+      # Removing {CustomCSS}
+      render_variable("CustomCSS", '')
     end # of method generate_meta
     
   end # of class
