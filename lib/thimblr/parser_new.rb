@@ -50,6 +50,18 @@ module Thimblr
     
     def render_index
       parse_meta_options
+      
+      render_block("IndexPage")
+      render_block("More")
+      
+      #pagination
+      render_variable("CurrentPage", "1")
+      render_variable("NextPage", "/page/2")
+      render_variable("TotalPages", "100")
+      
+      render_block("Pagination")
+      render_block("NextPage")
+      strip_block("PreviousPage")
 
       return @theme
     end
