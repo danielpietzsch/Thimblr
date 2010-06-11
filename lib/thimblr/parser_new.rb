@@ -49,7 +49,7 @@ module Thimblr
     end
     
     def render_index
-      generate_meta
+      parse_meta_options
       return @theme
     end
     
@@ -84,14 +84,16 @@ module Thimblr
     def strip_block(block_name)
       print "Stripping block {block:#{block_name}}..."
       if @theme.gsub!(block_regex_pattern_for(block_name), '')
-        puts "found and removed!"
+        puts "removed!"
       else
         puts "no match found!"
       end
     end
     
-    
-    def generate_meta
+    # handles <meta> tags Appearance Options
+    # OPTIMIZE check whether in some cases sub is sufficient (instead of gsub)
+    # OPTIMIZE maybe put every option type (color, font, boolean etc.) in a separate method
+    def parse_meta_options
       doc = Nokogiri::HTML.parse(@theme)
       meta_elements = doc.search('meta')
       
@@ -124,6 +126,20 @@ module Thimblr
             render_block(element['name'].gsub('text', 'if').titlecase.gsub(/\W/, ''))
           else
             strip_block(element['name'].gsub('text', 'if').titlecase.gsub(/\W/, ''))
+          end
+        end
+        
+        # Handling custom images: http://www.tumblr.com/docs/en/custom_themes#custom-images
+        if element['name'].include? 'image:'
+          if element['content'].present?
+            render_variable(element['name'], element['content'])
+            # converts something like "image:Header" Username" to "IfHeaderImage"
+            render_block(element['name'].gsub('image', 'if').titlecase.gsub(/\W/, '') + "Image")
+            # converts something like "image:Header" Username" to "IfNotHeaderImage"
+            strip_block(element['name'].gsub('image', 'if').titlecase.gsub(':', 'Not').gsub(/\W/, '') + "Image")
+          else
+            strip_block(element['name'].gsub('image', 'if').titlecase.gsub(/\W/, '') + "Image")
+            render_block(element['name'].gsub('image', 'if').titlecase.gsub(':', 'Not').gsub(/\W/, '') + "Image")
           end
         end
                 
