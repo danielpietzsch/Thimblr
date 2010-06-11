@@ -62,8 +62,46 @@ module Thimblr
       render_block("Pagination")
       render_block("NextPage")
       strip_block("PreviousPage")
+      
+      render_following
 
       return @theme
+    end
+    
+    # renders blocks 'Following' and 'Followed'
+    def render_following
+      #following
+      unless @following.blank?
+        following_template = fetch_content_of_block("Followed")
+        
+        # stores the concatenated result of all the rendered following_templates
+        rendered_followed = String.new
+        
+        @following.each do |blog|
+          rendered_template = following_template.dup
+          rendered_template.sub!(/\{FollowedName\}/i, blog['Name'])
+          rendered_template.sub!(/\{FollowedTitle\}/i, blog['Title'])
+          rendered_template.sub!(/\{FollowedURL\}/i, blog['URL'])
+          rendered_template.sub!(/\{FollowedPortraitURL-16\}/i, blog['PortraitURL-16'])
+          rendered_template.sub!(/\{FollowedPortraitURL-24\}/i, blog['PortraitURL-24'])
+          rendered_template.sub!(/\{FollowedPortraitURL-30\}/i, blog['PortraitURL-30'])
+          rendered_template.sub!(/\{FollowedPortraitURL-40\}/i, blog['PortraitURL-40'])
+          rendered_template.sub!(/\{FollowedPortraitURL-48\}/i, blog['PortraitURL-48'])
+          rendered_template.sub!(/\{FollowedPortraitURL-64\}/i, blog['PortraitURL-64'])
+          rendered_template.sub!(/\{FollowedPortraitURL-96\}/i, blog['PortraitURL-96'])
+          rendered_template.sub!(/\{FollowedPortraitURL-128\}/i, blog['PortraitURL-128'])
+          
+          rendered_followed += rendered_template
+        end
+        
+        render_block("Followed", rendered_followed)
+        render_block("Following")
+      end
+    end
+    
+    # returns the contents of the provided block
+    def fetch_content_of_block(block_name)
+      block_content = @theme.match(block_regex_pattern_for(block_name))[2]
     end
     
     # Scans the whole theme and replaces a variable with the replacement provided
@@ -79,14 +117,15 @@ module Thimblr
     end
     
     # The regular expression to match a block and its contents
-    def block_regex_pattern_for(block_name)      
+    def block_regex_pattern_for(block_name)  
       Regexp.new(/\{block:(#{block_name})\}((.|\s)*?)\{\/block:(#{block_name})\}/)
     end
     
-    # looks for the block named 'block_name' and replaces the whole block with just the content of the block
-    def render_block(block_name)
+    # looks for the block named 'block_name'
+    # and replaces the whole block with just the content of the block or a provided replacement for this content
+    def render_block(block_name, replacement = nil)
       print "Rendering block {block:#{block_name}}..."
-      if @theme.gsub!(block_regex_pattern_for(block_name)) { |match| $2 }
+      if @theme.gsub!(block_regex_pattern_for(block_name)) { |match| replacement || $2 }
         puts "found and replaced!"
       else
         puts "no match found!"
