@@ -17,6 +17,7 @@ module Thimblr
       'SubmissionsEnabled' => true,
       'TwitterUsername'    => "tumblr",
       'RSS'                => '/rss',
+      'CopyrightYears'     => '2009 - ' + Date.today.year.to_s,
       'Favicon'            => 'http://assets.tumblr.com/images/default_avatar_16.gif',
       'PortraitURL-16'     => "http://30.media.tumblr.com/avatar_013241641371_16.png",
       'PortraitURL-24'     => "http://30.media.tumblr.com/avatar_013241641371_24.png",
@@ -38,10 +39,8 @@ module Thimblr
     end
     
     def initialize(theme_code, blog_name = "demo")
-      blog = ImportedBlog.find_by_name(blog_name)
+      @blog = ImportedBlog.find_by_name(blog_name, :include => [:posts, :pages])
       template = YAML::load(open("config/demo.yml"))
-  
-      @posts = blog.posts
       
       load_default_data
       
@@ -55,22 +54,62 @@ module Thimblr
       render_block("More")
       
       #pagination
-      render_variable("CurrentPage", "1")
-      render_variable("NextPage", "/page/2")
-      render_variable("TotalPages", "100")
+      replace_variable("CurrentPage", "1")
+      replace_variable("NextPage", "/page/2")
+      replace_variable("TotalPages", "100")
       
       render_block("Pagination")
       render_block("NextPage")
       strip_block("PreviousPage")
       
       render_following
+      
+      replace_variable "CopyrightYears", Defaults['CopyrightYears']
+      replace_variable "RSS", Defaults['RSS']
+      replace_variable "Favicon", Defaults['Favicon']
+      replace_variable "PortraitURL-16", Defaults['PortraitURL-16']
+      replace_variable "PortraitURL-24", Defaults['PortraitURL-24']
+      replace_variable "PortraitURL-30", Defaults['PortraitURL-30']
+      replace_variable "PortraitURL-40", Defaults['PortraitURL-40']
+      replace_variable "PortraitURL-48", Defaults['PortraitURL-48']
+      replace_variable "PortraitURL-64", Defaults['PortraitURL-64']
+      replace_variable "PortraitURL-96", Defaults['PortraitURL-96']
+      replace_variable "PortraitURL-128", Defaults['PortraitURL-128']
+      
+      disable_unsupported_stuff
 
       return @theme
     end
     
+    # stuff that is currently unsupported by thimblr
+    # This also serves as a TODO list
+    def disable_unsupported_stuff
+      strip_block "Likes"
+      strip_block "SearchPage"
+      replace_variable "SearchQuery", ""
+      replace_variable "URLSafeSearchQuery", ""
+      replace_variable "SearchResultCount", ""
+      strip_block "NoSearchResults"
+      strip_block "Twitter"
+      strip_block "TagPage"
+      strip_block "DayPage"
+      strip_block "DayPagination"
+      strip_block "PreviousDayPage"
+      strip_block "NextDayPage"
+      strip_block "PostNotes"
+      strip_block "NoteCount"
+      strip_block "GroupMembers"
+      strip_block "GroupMember"
+    end
+    
     # renders blocks 'Following' and 'Followed'
+    # How it works:
+    # 1. Fetch contents of the block 'Followed' and store it as a template for each followed blog
+    # 2. For each followed blog, replace the variables of the template with the appropriate replacement
+    # 3. Concatenate the rendered code of each followed blog into a string
+    # 4. Render block 'Followed' and replace original contents with the concatenated string
+    # 5. Render block 'Following' 
     def render_following
-      #following
       unless @following.blank?
         following_template = fetch_content_of_block("Followed")
         
@@ -105,7 +144,7 @@ module Thimblr
     end
     
     # Scans the whole theme and replaces a variable with the replacement provided
-    def render_variable(var_name, replacement)
+    def replace_variable(var_name, replacement)
       print "Replacing variable {#{var_name}}..."
       if @theme.gsub!(/\{#{var_name}\}/i, replacement)
         puts "with '#{replacement}'"
@@ -117,6 +156,7 @@ module Thimblr
     end
     
     # The regular expression to match a block and its contents
+    # matchdata $2 will be the content of the block
     def block_regex_pattern_for(block_name)  
       Regexp.new(/\{block:(#{block_name})\}((.|\s)*?)\{\/block:(#{block_name})\}/)
     end
@@ -154,7 +194,7 @@ module Thimblr
         
         # handling custom colors and fonts: http://www.tumblr.com/docs/en/custom_themes#appearance-options
         if element['name'].present? and element['content'].present? and (element['name'].include? 'color' or element['name'].include? 'font')
-          render_variable(element['name'], element['content'])
+          replace_variable(element['name'], element['content'])
         end
         
         # Handling Booleans: http://www.tumblr.com/docs/en/custom_themes#booleans
@@ -173,7 +213,7 @@ module Thimblr
         # Handling custom text: http://www.tumblr.com/docs/en/custom_themes#custom-text
         if element['name'].include? 'text:'
           if element['content'].present?
-            render_variable(element['name'], element['content'])
+            replace_variable(element['name'], element['content'])
             # converts something like "text:Flickr Username" to "IfFlickrUsername"
             render_block(element['name'].gsub('text', 'if').titlecase.gsub(/\W/, ''))
           else
@@ -184,7 +224,7 @@ module Thimblr
         # Handling custom images: http://www.tumblr.com/docs/en/custom_themes#custom-images
         if element['name'].include? 'image:'
           if element['content'].present?
-            render_variable(element['name'], element['content'])
+            replace_variable(element['name'], element['content'])
             # converts something like "image:Header" Username" to "IfHeaderImage"
             render_block(element['name'].gsub('image', 'if').titlecase.gsub(/\W/, '') + "Image")
             # converts something like "image:Header" Username" to "IfNotHeaderImage"
@@ -197,7 +237,7 @@ module Thimblr
       end # of meta_elements each
       
       # Removing {CustomCSS}
-      render_variable("CustomCSS", '')
+      replace_variable("CustomCSS", '')
     end # of method generate_meta
     
   end # of class
