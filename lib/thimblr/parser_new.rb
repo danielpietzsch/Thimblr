@@ -5,6 +5,8 @@ require 'rubygems'
 require 'nokogiri'
 require 'active_support'
 
+#OPTIMIZE use options hashes for improved readability
+
 module Thimblr
   class ParserNew
     BackCompatibility = {"Type" => { "Regular"      => "Text",
@@ -27,7 +29,6 @@ module Thimblr
       'PortraitURL-64'     => "http://30.media.tumblr.com/avatar_013241641371_64.png",
       'PortraitURL-96'     => "http://30.media.tumblr.com/avatar_013241641371_96.png",
       'PortraitURL-128'    => "http://30.media.tumblr.com/avatar_013241641371_128.png"
-
     }
     
     # loads default data, no matter what the sample data is.
@@ -53,6 +54,10 @@ module Thimblr
       render_block("IndexPage")
       render_block("More")
       
+      
+      render_posts unless @blog.posts.blank?
+      
+      
       #pagination
       replace_variable("CurrentPage", "1")
       replace_variable("NextPage", "/page/2")
@@ -62,7 +67,7 @@ module Thimblr
       render_block("NextPage")
       strip_block("PreviousPage")
       
-      render_following
+      render_following unless @following.blank?
       
       replace_variable "CopyrightYears", Defaults['CopyrightYears']
       replace_variable "RSS", Defaults['RSS']
@@ -80,6 +85,84 @@ module Thimblr
 
       return @theme
     end
+    
+    
+    def render_posts
+      posts_template = fetch_content_of_block "Posts"
+    
+      #stores all rendered posts, concatenated together
+      all_rendered_posts = String.new
+      template = String.new
+      
+      @blog.posts.each do |post|
+        template = posts_template.dup
+        
+        case post.post_type
+        when 'Regular'
+          
+          strip_block "Photo", template
+          strip_block "Photoset", template
+          strip_block "Quote", template
+          strip_block "Link", template
+          strip_block "Chat", template
+          strip_block "Audio", template
+          strip_block "Video", template
+          strip_block "Answer", template
+          
+          render_block "Text", nil, template
+          
+          if post.content[:'regular-title'].nil?
+            strip_block "Title", template
+          else
+            render_block "Title", nil, template
+            replace_variable "Title", post.content[:'regular-title'], template
+          end
+          
+          replace_variable "Body", post.content[:'regular-body'], template
+        end # of case
+        
+        # stuff for all post types
+        replace_variable "Permalink", post.url_with_slug, template
+        replace_variable "ShortURL", "http://tumblr.com/xpv5qtavm", template
+        replace_variable "PostID", post.postid, template
+        
+        # Dates http://www.tumblr.com/docs/en/custom_themes#dates
+        render_block "Date", nil, template
+        replace_variable "DayOfMonth", post.date.day.to_s, template
+        replace_variable "DayOfMonthWithZero", post.date.strftime("%d"), template
+        replace_variable "DayOfWeek", post.date.strftime("%A"), template
+        replace_variable "ShortDayOfWeek", post.date.strftime("%a"), template
+        replace_variable "DayOfWeekNumber", (post.date.strftime("%w").to_i + 1).to_s, template
+        replace_variable "DayOfMonthSuffix", "th", template #FIXME fix day suffix
+        replace_variable "DayOfYear", post.date.strftime("%j"), template
+        replace_variable "WeekOfYear", post.date.strftime("%W"), template
+        replace_variable "Month", post.date.strftime("%B"), template
+        replace_variable "ShortMonth", post.date.strftime("%b"), template
+        replace_variable "MonthNumber", post.date.month.to_s, template
+        replace_variable "MonthNumberWithZero", post.date.strftime("%w"), template
+        replace_variable "Year", post.date.strftime("%w"), template
+        replace_variable "ShortYear", post.date.strftime("%y"), template
+        replace_variable "CapitalAmPm", post.date.strftime("%p"), template
+        replace_variable "AmPm", post.date.strftime("%p").downcase, template
+        replace_variable "12Hour", post.date.strftime("%I").sub(/^0/,""), template
+        replace_variable "24Hour", post.date.hour.to_s, template
+        replace_variable "12HourWithZero", post.date.strftime("%I"), template
+        replace_variable "24HourWithZero", post.date.strftime("%H"), template
+        replace_variable "Minutes", post.date.strftime("%M"), template
+        replace_variable "Seconds", post.date.strftime("%S"), template
+        replace_variable "Beats", ((post.date.usec / 1000).round).to_s, template
+        replace_variable "TimeAgo", "Some time ago", template
+        replace_variable "Timestamp", post.unix_timestamp, template
+        
+        all_rendered_posts += template
+      end
+      
+      render_block "Posts", all_rendered_posts
+      
+    end
+    
+    
+    
     
     # stuff that is currently unsupported by thimblr
     # This also serves as a TODO list
@@ -110,43 +193,42 @@ module Thimblr
     # 4. Render block 'Followed' and replace original contents with the concatenated string
     # 5. Render block 'Following' 
     def render_following
-      unless @following.blank?
-        following_template = fetch_content_of_block("Followed")
+      following_template = fetch_content_of_block("Followed")
+      
+      # stores the concatenated result of all the rendered following_templates
+      rendered_followed = String.new
+      
+      @following.each do |blog|
+        rendered_template = following_template.dup
+        rendered_template.sub!(/\{FollowedName\}/i, blog['Name'])
+        rendered_template.sub!(/\{FollowedTitle\}/i, blog['Title'])
+        rendered_template.sub!(/\{FollowedURL\}/i, blog['URL'])
+        rendered_template.sub!(/\{FollowedPortraitURL-16\}/i, blog['PortraitURL-16'])
+        rendered_template.sub!(/\{FollowedPortraitURL-24\}/i, blog['PortraitURL-24'])
+        rendered_template.sub!(/\{FollowedPortraitURL-30\}/i, blog['PortraitURL-30'])
+        rendered_template.sub!(/\{FollowedPortraitURL-40\}/i, blog['PortraitURL-40'])
+        rendered_template.sub!(/\{FollowedPortraitURL-48\}/i, blog['PortraitURL-48'])
+        rendered_template.sub!(/\{FollowedPortraitURL-64\}/i, blog['PortraitURL-64'])
+        rendered_template.sub!(/\{FollowedPortraitURL-96\}/i, blog['PortraitURL-96'])
+        rendered_template.sub!(/\{FollowedPortraitURL-128\}/i, blog['PortraitURL-128'])
         
-        # stores the concatenated result of all the rendered following_templates
-        rendered_followed = String.new
-        
-        @following.each do |blog|
-          rendered_template = following_template.dup
-          rendered_template.sub!(/\{FollowedName\}/i, blog['Name'])
-          rendered_template.sub!(/\{FollowedTitle\}/i, blog['Title'])
-          rendered_template.sub!(/\{FollowedURL\}/i, blog['URL'])
-          rendered_template.sub!(/\{FollowedPortraitURL-16\}/i, blog['PortraitURL-16'])
-          rendered_template.sub!(/\{FollowedPortraitURL-24\}/i, blog['PortraitURL-24'])
-          rendered_template.sub!(/\{FollowedPortraitURL-30\}/i, blog['PortraitURL-30'])
-          rendered_template.sub!(/\{FollowedPortraitURL-40\}/i, blog['PortraitURL-40'])
-          rendered_template.sub!(/\{FollowedPortraitURL-48\}/i, blog['PortraitURL-48'])
-          rendered_template.sub!(/\{FollowedPortraitURL-64\}/i, blog['PortraitURL-64'])
-          rendered_template.sub!(/\{FollowedPortraitURL-96\}/i, blog['PortraitURL-96'])
-          rendered_template.sub!(/\{FollowedPortraitURL-128\}/i, blog['PortraitURL-128'])
-          
-          rendered_followed += rendered_template
-        end
-        
-        render_block("Followed", rendered_followed)
-        render_block("Following")
+        rendered_followed += rendered_template
       end
+      
+      render_block("Followed", rendered_followed)
+      render_block("Following")
     end
     
     # returns the contents of the provided block
     def fetch_content_of_block(block_name)
-      block_content = @theme.match(block_regex_pattern_for(block_name))[2]
+      @theme.match(block_regex_pattern_for(block_name))
+      block_content = $2 #@theme.match(block_regex_pattern_for(block_name))[2]
     end
     
     # Scans the whole theme and replaces a variable with the replacement provided
-    def replace_variable(var_name, replacement)
+    def replace_variable(var_name, replacement, string = @theme)
       print "Replacing variable {#{var_name}}..."
-      if @theme.gsub!(/\{#{var_name}\}/i, replacement)
+      if string.gsub!(/\{#{var_name}\}/i, replacement)
         puts "with '#{replacement}'"
       else
         puts "no match found!"
@@ -163,9 +245,9 @@ module Thimblr
     
     # looks for the block named 'block_name'
     # and replaces the whole block with just the content of the block or a provided replacement for this content
-    def render_block(block_name, replacement = nil)
+    def render_block(block_name, replacement = nil, string = @theme)
       print "Rendering block {block:#{block_name}}..."
-      if @theme.gsub!(block_regex_pattern_for(block_name)) { |match| replacement || $2 }
+      if string.gsub!(block_regex_pattern_for(block_name)) { |match| replacement || $2 }
         puts "found and replaced!"
       else
         puts "no match found!"
@@ -173,9 +255,9 @@ module Thimblr
     end
     
     # removes a whole block
-    def strip_block(block_name)
+    def strip_block(block_name, string = @theme)
       print "Stripping block {block:#{block_name}}..."
-      if @theme.gsub!(block_regex_pattern_for(block_name), '')
+      if string.gsub!(block_regex_pattern_for(block_name), '')
         puts "removed!"
       else
         puts "no match found!"
