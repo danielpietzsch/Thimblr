@@ -224,6 +224,7 @@ module Thimblr
           
           strip_block "ExternalAudio", template # TODO find out how to render this properly
           
+          # TODO find out how to read ID3 tags and render this properly
           strip_block "AlbumArt", template
           strip_block "Artist", template
           strip_block "Album", template
@@ -232,6 +233,18 @@ module Thimblr
         when 'Video'
           
           only_render_block_for_post_type "Video", template
+          
+          if post.content[:'video-caption'].present?
+            render_block "Caption", nil, template
+            replace_variable "Caption", post.content[:'video-caption'], template
+          else
+            strip_block "Caption", template
+          end
+          
+          # TODO fix the sizes
+          replace_variable "Video-500", post.content[:'video-player'], template
+          replace_variable "Video-400", post.content[:'video-player'], template
+          replace_variable "Video-250", post.content[:'video-player'], template
           
         when 'Answer'
           
