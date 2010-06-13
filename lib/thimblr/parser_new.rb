@@ -150,6 +150,20 @@ module Thimblr
             strip_block "HighRes", template
           end
           
+        when 'Quote'
+          
+          only_render_block_for_post_type("Quote", template)
+          
+          replace_variable "Quote", post.content[:"quote-text"], template
+          replace_variable "Length", "medium", template # TODO use 'real' values
+          
+          if post.content[:'quote-source'].present?
+            render_block "Source", nil, template
+            replace_variable "Source", post.content[:'quote-source'], template
+          else
+            strip_block "Source", template
+          end
+          
         end # of case
         
         # stuff for all post types
