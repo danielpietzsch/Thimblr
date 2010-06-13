@@ -60,10 +60,6 @@ module Thimblr
           end
           
         end
-        
-        # OPTIMIZE not sure yet, if I need these
-        # post['Type'] = "Text" if post['Type'] == "Regular"
-        # post['Type'] = "Chat" if post['Type'] == "Conversation"
       end
     end
     

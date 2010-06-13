@@ -231,11 +231,13 @@ module Thimblr
             replace_variable "Title", post.content[:'conversation-title'], template
           else
             strip_block "Title", template
-          end
+          end        
           rescue
             strip_block "Title", template
           end
           
+          
+
         when 'Audio'
           
           only_render_block_for_post_type("Audio", template)
