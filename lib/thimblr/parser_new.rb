@@ -31,6 +31,8 @@ module Thimblr
       'PortraitURL-128'    => "http://30.media.tumblr.com/avatar_013241641371_128.png"
     }
     
+    PostTypes = ["Text", "Photo", "Photoset", "Quote", "Link", "Chat", "Audio", "Video", "Answer"]
+    
     # loads default data, no matter what the sample data is.
     # this gives data from imported blogs some more stuff, since an un-authenticated API call doesn't reveal all data
     def load_default_data
@@ -98,18 +100,9 @@ module Thimblr
         template = posts_template.dup
         
         case post.post_type
-        when 'Regular'
+        when 'Regular', 'Text'
           
-          strip_block "Photo", template
-          strip_block "Photoset", template
-          strip_block "Quote", template
-          strip_block "Link", template
-          strip_block "Chat", template
-          strip_block "Audio", template
-          strip_block "Video", template
-          strip_block "Answer", template
-          
-          render_block "Text", nil, template
+          only_render_block_for_post_type("Text", template)
           
           if post.content[:'regular-title'].nil?
             strip_block "Title", template
@@ -119,6 +112,44 @@ module Thimblr
           end
           
           replace_variable "Body", post.content[:'regular-body'], template
+          
+        when 'Photo'
+          
+          only_render_block_for_post_type("Photo", template)
+          
+          replace_variable "PhotoURL-500", post.content[:photo_url_500], template
+          replace_variable "PhotoURL-400", post.content[:photo_url_400], template
+          replace_variable "PhotoURL-250", post.content[:photo_url_250], template
+          replace_variable "PhotoURL-100", post.content[:photo_url_100], template
+          replace_variable "PhotoURL-75sq", post.content[:photo_url_75], template
+          replace_variable "PhotoURL-HighRes", post.content[:photo_url_1280], template
+          
+          if post.content[:'photo-link-url'].nil?
+            replace_variable "LinkOpenTag", '', template
+            replace_variable "LinkCloseTag", '', template
+            replace_variable "LinkURL", '', template
+          else
+            replace_variable "LinkOpenTag", "<a href='post.content[:'photo-link-url']'>", template
+            replace_variable "LinkCloseTag", '</a>', template
+            replace_variable "LinkURL", post.content[:'photo-link-url'], template
+          end
+          
+          if post.content[:'photo-caption'].nil?
+            strip_block "Caption", template
+            replace_variable "PhotoAlt", '', template
+          else
+            render_block "Caption", nil, template
+            replace_variable "Caption", post.content[:'photo-caption'], template
+            # OPTIMIZE wrap regex in meaningful method name!?
+            replace_variable "PhotoAlt", post.content[:'photo-caption'].gsub(/\<\/?[^\>]*\>/, ""), template
+          end
+          
+          if post.content[:photo_url_1280].present? and post.content[:photo_url_1280] != post.content[:photo_url_500]
+            render_block "HighRes", nil, template
+          else
+            strip_block "HighRes", template
+          end
+          
         end # of case
         
         # stuff for all post types
@@ -161,6 +192,16 @@ module Thimblr
       
     end
     
+    
+    # pass in a post_type and the posts template ({block:Posts})
+    # will render the block of the post_type and remove all others
+    def only_render_block_for_post_type(post_type, posts_template)
+      types_to_remove = PostTypes.reject { |type| type == post_type }
+      
+      types_to_remove.each { |type| strip_block(type, posts_template) }
+      
+      render_block post_type, nil, posts_template
+    end
     
     
     
