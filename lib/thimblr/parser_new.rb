@@ -294,6 +294,38 @@ module Thimblr
         replace_variable "TimeAgo", "Some time ago", template
         replace_variable "Timestamp", post.unix_timestamp, template
         
+        # Tags
+        
+        begin
+        if post.content[:tags].present?
+          render_block "HasTags", nil, template
+          
+          tag_template = fetch_content_of_block("Tags")
+
+          # stores the concatenated result of all the rendered following_templates
+          all_tags = String.new
+
+          post.content[:tags].each do |tag|
+            temp = tag_template.dup
+            replace_variable "Tag", tag, temp
+            replace_variable "URLSafeTag", tag.underscore, temp
+            replace_variable "TagURL", "/tagged/#{tag}", temp
+            replace_variable "TagURLChrono", "/tagged/#{tag}", temp
+
+            all_tags += temp
+          end
+
+          render_block("Tags", all_tags, template) 
+        else
+          strip_block "HasTags", template
+        end
+        rescue
+          strip_block "HasTags", template
+        end
+        
+        
+        
+        
         all_rendered_posts += template
       end
       
@@ -348,6 +380,7 @@ module Thimblr
       # stores the concatenated result of all the rendered following_templates
       rendered_followed = String.new
       
+      # FIXME use replace_variable
       @following.each do |blog|
         rendered_template = following_template.dup
         rendered_template.sub!(/\{FollowedName\}/i, blog['Name'])
