@@ -8,11 +8,7 @@ require 'active_support'
 #OPTIMIZE use options hashes for improved readability
 
 module Thimblr
-  class ParserNew
-    BackCompatibility = {"Type" => { "Regular"      => "Text",
-                                     "Conversation" => "Chat" }
-    }
-                        
+  class ParserNew                        
     Defaults = {
       'PostsPerPage'       => 10,
       'AskLabel'           => "Ask me anything",
@@ -250,9 +246,19 @@ module Thimblr
           
           only_render_block_for_post_type "Answer", template
         
+          replace_variable "Question", post.content[:question], template
+          replace_variable "Answer", post.content[:answer], template
+          replace_variable "Asker", "Anonymous", template
           
-          
-          
+          replace_variable "AskerPortraitUrl-16", 'http://assets.tumblr.com/images/default_avatar_16.gif', template
+          replace_variable "AskerPortraitUrl-24", 'http://assets.tumblr.com/images/default_avatar_24.gif', template
+          replace_variable "AskerPortraitUrl-30", 'http://assets.tumblr.com/images/default_avatar_30.gif', template
+          replace_variable "AskerPortraitUrl-40", 'http://assets.tumblr.com/images/default_avatar_40.gif', template
+          replace_variable "AskerPortraitUrl-48", 'http://assets.tumblr.com/images/default_avatar_48.gif', template
+          replace_variable "AskerPortraitUrl-64", 'http://assets.tumblr.com/images/default_avatar_64.gif', template
+          replace_variable "AskerPortraitUrl-96", 'http://assets.tumblr.com/images/default_avatar_96.gif', template
+          replace_variable "AskerPortraitUrl-128", 'http://assets.tumblr.com/images/default_avatar_128.gif', template
+        
         end # of case
         
         # stuff for all post types
@@ -466,25 +472,6 @@ module Thimblr
       replace_variable("CustomCSS", '')
     end # of method generate_meta
     
-    def audio_player(audiofile,colour = "") # Colour is one of 'black', 'white' or 'grey'
-      case colour
-      when "black"
-        colour = "_black"
-      when "grey"
-        colour = ""
-        audiofile += "&color=E4E4E4"
-      when "white"
-        colour = ""
-        audiofile += "&color=FFFFFF"
-      else
-        colour = ""
-      end
-      @apid += 1
-      return <<-END
-        <script type="text/javascript" language="javascript" src="http://assets.tumblr.com/javascript/tumblelog.js?16"></script><span id="audio_player_#{@apid}">[<a href="http://www.adobe.com/shockwave/download/download.cgi?P1_Prod_Version=ShockwaveFlash" target="_blank">Flash 9</a> is required to listen to audio.]</span><script type="text/javascript">replaceIfFlash(9,"audio_player_#{@apid}",'<div class="audio_player"><embed type="application/x-shockwave-flash" src="/audio_player#{colour}.swf?audio_file=#{audiofile}" height="27" width="207" quality="best"></embed></div>')</script>
-      END
-    
-    end
     
     
   end # of class
