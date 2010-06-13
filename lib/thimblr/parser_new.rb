@@ -187,12 +187,16 @@ module Thimblr
           
           only_render_block_for_post_type("Chat", template)
           
-          # if post.content[:'conversation-title'] and post.content[:'conversation-title'].present?
-          #   render_block "Title", nil, template
-          #   replace_variable "Title", post.content[:'conversation-title'], template
-          # else
-          #   strip_block "Title", template
-          # end
+          begin
+          if post.content[:'conversation-title'].present?
+            render_block "Title", nil, template
+            replace_variable "Title", post.content[:'conversation-title'], template
+          else
+            strip_block "Title", template
+          end
+          rescue
+            strip_block "Title", template
+          end
           
         when 'Audio'
           
@@ -291,7 +295,7 @@ module Thimblr
         replace_variable "Minutes", post.date.strftime("%M"), template
         replace_variable "Seconds", post.date.strftime("%S"), template
         replace_variable "Beats", ((post.date.usec / 1000).round).to_s, template
-        replace_variable "TimeAgo", "Some time ago", template
+        replace_variable "TimeAgo", "some time ago", template
         replace_variable "Timestamp", post.unix_timestamp, template
         
         # Tags
@@ -322,7 +326,7 @@ module Thimblr
         rescue
           strip_block "HasTags", template
         end
-        
+                
         
         
         
@@ -365,6 +369,11 @@ module Thimblr
       strip_block "NoteCount"
       strip_block "GroupMembers"
       strip_block "GroupMember"
+      strip_block "RebloggedFrom"
+      strip_block "Reblog"
+      render_block "NotReblog" # OPTIMIZE currently only enabled because testing with Redux theme
+      strip_block "FromMobile"
+      strip_block "FromBookmarklet"
     end
     
     # renders blocks 'Following' and 'Followed'
