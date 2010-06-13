@@ -235,8 +235,6 @@ module Thimblr
           rescue
             strip_block "Title", template
           end
-          
-          
 
         when 'Audio'
           
@@ -426,29 +424,31 @@ module Thimblr
     def render_following
       following_template = fetch_content_of_block("Followed")
       
-      # stores the concatenated result of all the rendered following_templates
-      rendered_followed = String.new
+      if following_template.present?
+        # stores the concatenated result of all the rendered following_templates
+        rendered_followed = String.new
       
-      # FIXME use replace_variable
-      @following.each do |blog|
-        rendered_template = following_template.dup
-        rendered_template.sub!(/\{FollowedName\}/i, blog['Name'])
-        rendered_template.sub!(/\{FollowedTitle\}/i, blog['Title'])
-        rendered_template.sub!(/\{FollowedURL\}/i, blog['URL'])
-        rendered_template.sub!(/\{FollowedPortraitURL-16\}/i, blog['PortraitURL-16'])
-        rendered_template.sub!(/\{FollowedPortraitURL-24\}/i, blog['PortraitURL-24'])
-        rendered_template.sub!(/\{FollowedPortraitURL-30\}/i, blog['PortraitURL-30'])
-        rendered_template.sub!(/\{FollowedPortraitURL-40\}/i, blog['PortraitURL-40'])
-        rendered_template.sub!(/\{FollowedPortraitURL-48\}/i, blog['PortraitURL-48'])
-        rendered_template.sub!(/\{FollowedPortraitURL-64\}/i, blog['PortraitURL-64'])
-        rendered_template.sub!(/\{FollowedPortraitURL-96\}/i, blog['PortraitURL-96'])
-        rendered_template.sub!(/\{FollowedPortraitURL-128\}/i, blog['PortraitURL-128'])
+        # FIXME use replace_variable
+        @following.each do |blog|
+          rendered_template = following_template.dup
+          rendered_template.sub!(/\{FollowedName\}/i, blog['Name'])
+          rendered_template.sub!(/\{FollowedTitle\}/i, blog['Title'])
+          rendered_template.sub!(/\{FollowedURL\}/i, blog['URL'])
+          rendered_template.sub!(/\{FollowedPortraitURL-16\}/i, blog['PortraitURL-16'])
+          rendered_template.sub!(/\{FollowedPortraitURL-24\}/i, blog['PortraitURL-24'])
+          rendered_template.sub!(/\{FollowedPortraitURL-30\}/i, blog['PortraitURL-30'])
+          rendered_template.sub!(/\{FollowedPortraitURL-40\}/i, blog['PortraitURL-40'])
+          rendered_template.sub!(/\{FollowedPortraitURL-48\}/i, blog['PortraitURL-48'])
+          rendered_template.sub!(/\{FollowedPortraitURL-64\}/i, blog['PortraitURL-64'])
+          rendered_template.sub!(/\{FollowedPortraitURL-96\}/i, blog['PortraitURL-96'])
+          rendered_template.sub!(/\{FollowedPortraitURL-128\}/i, blog['PortraitURL-128'])
         
-        rendered_followed += rendered_template
-      end
+          rendered_followed += rendered_template
+        end
       
-      render_block("Followed", rendered_followed)
-      render_block("Following")
+        render_block("Followed", rendered_followed)
+        render_block("Following")
+      end
     end
     
     # returns the contents of the provided block
