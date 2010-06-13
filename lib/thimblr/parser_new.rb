@@ -48,6 +48,8 @@ module Thimblr
       load_default_data
       
       @theme = theme_code
+      
+      @apid = 0 # TODO rename
     end
     
     def render_index
@@ -150,6 +152,11 @@ module Thimblr
             strip_block "HighRes", template
           end
           
+        # TODO render photoset posts
+        when 'Photoset'
+          
+          only_render_block_for_post_type("Photoset")
+          
         when 'Quote'
           
           only_render_block_for_post_type("Quote", template)
@@ -178,6 +185,60 @@ module Thimblr
           else
             strip_block "Description", template
           end
+          
+        #TODO render chat posts 
+        when 'Chat', 'Conversation'
+          
+          only_render_block_for_post_type("Chat", template)
+          
+          # if post.content[:'conversation-title'] and post.content[:'conversation-title'].present?
+          #   render_block "Title", nil, template
+          #   replace_variable "Title", post.content[:'conversation-title'], template
+          # else
+          #   strip_block "Title", template
+          # end
+          
+        when 'Audio'
+          
+          only_render_block_for_post_type("Audio", template)
+          
+          if post.content[:'audio-caption'].present?
+            render_block "Caption", nil, template
+            replace_variable "Caption", post.content[:'audio-caption'], template
+          else
+            strip_block "Caption", template
+          end
+          
+          replace_variable "AudioPlayer", post.content[:'audio-player'], template
+          replace_variable "AudioPlayerWhite", post.content[:'audio-player'], template
+          replace_variable "AudioPlayerGrey", post.content[:'audio-player'], template
+          replace_variable "AudioPlayerBlack", post.content[:'audio-player'], template
+          
+          # TODO {RawAudioUrl}
+          
+          replace_variable "PlayCount", post.audio_plays.to_s, template
+          # see http://rubyforge.org/snippet/detail.php?type=snippet&id=8
+          replace_variable "FormattedPlayCount", post.audio_plays.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2'), template
+          # OPTIMIZE make proper pluralization
+          replace_variable "PlayCountWithLabel", post.audio_plays.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2') + " plays", template
+          
+          strip_block "ExternalAudio", template # TODO find out how to render this properly
+          
+          strip_block "AlbumArt", template
+          strip_block "Artist", template
+          strip_block "Album", template
+          strip_block "TrackName", template
+          
+        when 'Video'
+          
+          only_render_block_for_post_type "Video", template
+          
+        when 'Answer'
+          
+          only_render_block_for_post_type "Answer", template
+        
+          
+          
           
         end # of case
         
@@ -391,6 +452,27 @@ module Thimblr
       # Removing {CustomCSS}
       replace_variable("CustomCSS", '')
     end # of method generate_meta
+    
+    def audio_player(audiofile,colour = "") # Colour is one of 'black', 'white' or 'grey'
+      case colour
+      when "black"
+        colour = "_black"
+      when "grey"
+        colour = ""
+        audiofile += "&color=E4E4E4"
+      when "white"
+        colour = ""
+        audiofile += "&color=FFFFFF"
+      else
+        colour = ""
+      end
+      @apid += 1
+      return <<-END
+        <script type="text/javascript" language="javascript" src="http://assets.tumblr.com/javascript/tumblelog.js?16"></script><span id="audio_player_#{@apid}">[<a href="http://www.adobe.com/shockwave/download/download.cgi?P1_Prod_Version=ShockwaveFlash" target="_blank">Flash 9</a> is required to listen to audio.]</span><script type="text/javascript">replaceIfFlash(9,"audio_player_#{@apid}",'<div class="audio_player"><embed type="application/x-shockwave-flash" src="/audio_player#{colour}.swf?audio_file=#{audiofile}" height="27" width="207" quality="best"></embed></div>')</script>
+      END
+    
+    end
+    
     
   end # of class
 end # of module
