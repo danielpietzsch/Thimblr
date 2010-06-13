@@ -17,14 +17,14 @@ module Thimblr
       'RSS'                => '/rss',
       'CopyrightYears'     => '2009 - ' + Date.today.year.to_s,
       'Favicon'            => 'http://assets.tumblr.com/images/default_avatar_16.gif',
-      'PortraitURL-16'     => "http://30.media.tumblr.com/avatar_013241641371_16.png",
-      'PortraitURL-24'     => "http://30.media.tumblr.com/avatar_013241641371_24.png",
-      'PortraitURL-30'     => "http://30.media.tumblr.com/avatar_013241641371_30.png",
-      'PortraitURL-40'     => "http://30.media.tumblr.com/avatar_013241641371_40.png",
-      'PortraitURL-48'     => "http://30.media.tumblr.com/avatar_013241641371_48.png",
-      'PortraitURL-64'     => "http://30.media.tumblr.com/avatar_013241641371_64.png",
-      'PortraitURL-96'     => "http://30.media.tumblr.com/avatar_013241641371_96.png",
-      'PortraitURL-128'    => "http://30.media.tumblr.com/avatar_013241641371_128.png"
+      'PortraitURL-16'     => "http://assets.tumblr.com/images/default_avatar_16.gif",
+      'PortraitURL-24'     => "http://assets.tumblr.com/images/default_avatar_24.gif",
+      'PortraitURL-30'     => "http://assets.tumblr.com/images/default_avatar_30.gif",
+      'PortraitURL-40'     => "http://assets.tumblr.com/images/default_avatar_40.gif",
+      'PortraitURL-48'     => "http://assets.tumblr.com/images/default_avatar_48.gif",
+      'PortraitURL-64'     => "http://assets.tumblr.com/images/default_avatar_64.gif",
+      'PortraitURL-96'     => "http://assets.tumblr.com/images/default_avatar_96.gif",
+      'PortraitURL-128'    => "http://assets.tumblr.com/images/default_avatar_128.gif"
     }
     
     PostTypes = ["Text", "Photo", "Photoset", "Quote", "Link", "Chat", "Audio", "Video", "Answer"]
@@ -57,6 +57,40 @@ module Thimblr
       
       render_posts unless @blog.posts.blank?
       
+      # This is important to be rendered AFTER render_posts,
+      # because of some ambigious variables (like Description or Title f.e.)
+      replace_variable "Title", @blog.title
+      
+      if @blog.description.present?
+        render_block "Description"
+        replace_variable "Description", @blog.description
+        replace_variable "MetaDescription", @blog.description.gsub(/\<\/?[^\>]*\>/, "")
+      else
+        strip_block "Description"
+      end
+        
+        
+      # Pages
+      if @blog.pages.present?   
+        page_template = fetch_content_of_block("Pages")
+      
+        all_pages = String.new
+      
+        @blog.pages.each do |page|
+          temp = page_template.dup
+        
+          replace_variable "URL", page.url, temp
+          replace_variable "Label", page.link_title, temp
+        
+          all_pages += temp_template
+        end
+      
+        render_block("HasPages", all_pages)
+      else
+        strip_block "HasPages"
+      end
+        
+        
       
       #pagination
       replace_variable("CurrentPage", "1")
@@ -82,6 +116,10 @@ module Thimblr
       replace_variable "PortraitURL-128", Defaults['PortraitURL-128']
       
       disable_unsupported_stuff
+      
+      strip_block "PermalinkPage"
+      strip_block "PostTitle"
+      strip_block "PostSummary"
 
       return @theme
     end
