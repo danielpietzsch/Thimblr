@@ -164,6 +164,21 @@ module Thimblr
             strip_block "Source", template
           end
           
+        when 'Link'
+          
+          only_render_block_for_post_type("Link", template)
+          
+          replace_variable "URL", post.content[:'link-url'], template
+          replace_variable "Name", post.content[:'link-text'] || post.content[:'link-url'], template
+          replace_variable "Target", "target=\"_blank\"", template
+          
+          if post.content[:'link-description'].present?
+            render_block "Description", nil, template
+            replace_variable "Description", post.content[:'link-description'], template
+          else
+            strip_block "Description", template
+          end
+          
         end # of case
         
         # stuff for all post types
