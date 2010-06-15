@@ -49,8 +49,21 @@ module Thimblr
 
           # import all content, such as title, body etc.
           post_to_import.children.each do |child|
-            post.content[child.name.to_sym] = child.content unless child.name == 'tag' or child.name == 'photo-url'
+            post.content[child.name.to_sym] = child.content unless child.name == 'tag' or child.name == 'photo-url' or child.name == 'conversation' or child.name == 'line'
           end
+          
+          lines = Array.new
+          
+          post_to_import.search('line').each do |line|
+            line_hash = Hash.new
+            line_hash[:label] = line['label']
+            line_hash[:name] = line['name']
+            line_hash[:line] = line.content.strip
+            
+            lines << line_hash
+          end
+          
+          post.content[:lines] = lines
           
           # special handling for tags and photo urls
           post.content[:tags] = post_to_import.search('tag').collect { |tag| tag.content }
