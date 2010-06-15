@@ -54,7 +54,6 @@ module Thimblr
       render_block("IndexPage")
       render_block("More")
       
-      
       render_posts unless @blog.posts.blank?
       
       # This is important to be rendered AFTER render_posts,
@@ -117,7 +116,10 @@ module Thimblr
       
       disable_unsupported_stuff
       
+      render_block "SearchForm"
+      
       strip_block "PermalinkPage"
+      strip_block "Permalink" # Seems to be an old version of PermalinkPage!?!
       strip_block "PostTitle"
       strip_block "PostSummary"
 
@@ -138,7 +140,7 @@ module Thimblr
         case post.post_type
         when 'Regular', 'Text'
           
-          only_render_block_for_post_type("Text", template)
+          only_render_block_for_post_type("Text", template) # TODO Regular or Text
           
           if post.content[:'regular-title'].nil?
             strip_block "Title", template
@@ -358,11 +360,10 @@ module Thimblr
         replace_variable "Timestamp", post.unix_timestamp, template
         
         # Tags
+        tag_template = fetch_content_of_block("Tags")
         
-        if post.content[:tags].present?
+        if post.content[:tags].present? and tag_template.present?
           render_block "HasTags", nil, template
-          
-          tag_template = fetch_content_of_block("Tags")
 
           # stores the concatenated result of all the rendered following_templates
           all_tags = String.new
@@ -386,13 +387,12 @@ module Thimblr
       end
       
       render_block "Posts", all_rendered_posts
-      
     end
     
     
     # pass in a post_type and the posts template ({block:Posts})
     # will render the block of the post_type and remove all others
-    def only_render_block_for_post_type(post_type, posts_template)
+    def only_render_block_for_post_type(post_type, posts_template)    
       types_to_remove = PostTypes.reject { |type| type == post_type }
       
       types_to_remove.each { |type| strip_block(type, posts_template) }
@@ -400,6 +400,14 @@ module Thimblr
       render_block post_type, nil, posts_template
     end
     
+    
+    def block_exists?(block_name, string = @theme)
+      if string.match(block_regex_pattern_for(block_name))
+        true
+      else
+        false
+      end
+    end
     
     
     # stuff that is currently unsupported by thimblr

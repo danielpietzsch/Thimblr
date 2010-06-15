@@ -164,7 +164,7 @@
 			
 			<!-- SEARCH RESULTS -->
 			
-			<!-- {block:SearchPage} -->
+			 {block:SearchPage}
 			<div class="entry search">
 				<div class="icon">
 					<a class="permalink" href="/search?q={SearchQuery}"></a>
@@ -175,14 +175,14 @@
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.entry .search -->
-			<!-- {/block:SearchPage} -->
+			 {/block:SearchPage}
 			
 			
 			{block:Posts}
 			
 			<!-- DATES -->
 			
-			<!-- {block:NewDayDate} -->
+			 {block:NewDayDate}
 			<div class="entry date">
 				<div class="icon">
 					<a class="permalink" href="/archive/{Year}/{MonthNumber}"></a>
@@ -193,10 +193,10 @@
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.entry .date -->
-			<!-- {/block:NewDayDate} -->
+			 {/block:NewDayDate}
 			
 			<!-- PHOTO -->
-			<!-- {block:Photo} -->
+			 {block:Photo}
 			<div class="post photo" id="p_{PostID}">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -211,20 +211,20 @@
 						{LinkOpenTag}<img src="{PhotoURL-500}" class="faint" alt="{PhotoAlt}"/>{LinkCloseTag}
 						</div>
 					</div><!-- .the_photo -->
-					<!--{block:Caption}-->
+					{block:Caption}
 					<div class="caption">
 						{block:GroupMembers}<img class="author" title="{PostAuthorName}" alt="{PostAuthorName} writes:" src="{PostAuthorPortraitURL-64}" />{/block:GroupMembers}
 						<p>{Caption}</p>
 						{block:Date}{block:IfDisqusShortname}<p><a href="{Permalink}#disqus_thread"></a></p>{block:IfDisqusShortname}{/block:Date}
 					</div><!-- /.caption -->
-					<!--{/block:Caption}-->
+					{/block:Caption}
 				</div><!-- /.content -->
 			</div><!-- /.post .photo -->
-			<!-- {/block:Photo} -->
+			 {/block:Photo}
 			
 			<!-- VIDEO -->
 			
-			<!-- {block:Video} -->
+			 {block:Video}
 			<div class="post video" id="p_{PostID}">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -234,20 +234,20 @@
 				</div><!-- /.icon -->
 				<div class="content">
 					<div class="player">{Video-500}</div>
-					<!--{block:Caption}-->
+					{block:Caption}
 					<div class="caption">
 						{block:GroupMembers}<img class="author" title="{PostAuthorName}" alt="{PostAuthorName} writes:" src="{PostAuthorPortraitURL-64}" />{/block:GroupMembers}
 						<p>{Caption}</p>
 						{block:Date}{block:IfDisqusShortname}<p><a href="{Permalink}#disqus_thread"></a></p>{block:IfDisqusShortname}{/block:Date}
 					</div><!-- /.caption -->
-					<!--{/block:Caption}-->
+					{/block:Caption}
 				</div><!-- /.content -->
 			</div><!-- /.post .video -->
-			<!-- {/block:Video} -->
+			 {/block:Video}
 			
 			<!-- LINK -->
 			
-			<!-- {block:Link} -->
+			{block:Link}
 			<div class="post link" id="p_{PostID}">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -264,11 +264,11 @@
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.post .link -->
-			<!-- {/block:Link} -->
+			{/block:Link}
 
 			<!-- REGULAR -->
 
-			<!-- {block:Regular} -->
+			{block:Regular}
 			<div class="post regular" id="p_{PostID}">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -285,11 +285,11 @@
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.post .regular -->
-			<!-- {/block:Regular} -->
+			{/block:Regular}
 			
 			<!-- QUOTE -->
 			
-			<!-- {block:Quote} -->
+			{block:Quote}
 			<div class="post quote" id="p_{PostID}">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -300,18 +300,18 @@
 				<div class="content">
 					<div class="caption">
 						<p class="the_quote {Length}"><span class="quote_mark">"</span>{Quote}<span class="quote_mark">"</span></p>
-						<!-- {block:Source} -->
+						{block:Source}
 						<p class="source">{Source}</p>
-						<!-- {/block:Source} -->
+						{/block:Source}
 						{block:Date}{block:IfDisqusShortname}<p><a href="{Permalink}#disqus_thread"></a></p>{block:IfDisqusShortname}{/block:Date}
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.post .quote -->			
-			<!-- {/block:Quote} -->
+			{/block:Quote}
 			
 			<!-- AUDIO -->
 			
-			<!-- {block:Audio} -->
+			{block:Audio}
 			<div class="post audio" id="p_{PostID}">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -328,11 +328,11 @@
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.post .quote -->
-			<!-- {/block:Audio} -->
+			{/block:Audio}
 			
 			<!-- CONVERSATION -->
 
-			<!-- {block:Conversation} -->
+			{block:Conversation}
 			<div class="post conversation" id="p_{PostID}">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -342,29 +342,29 @@
 				</div><!-- /.icon -->
 				<div class="content">
 					<div class="caption">
-						<!-- {block:Title} -->
+						{block:Title}
 						<h3><a href="{Permalink}">{Title}</a></h3>
-						<!-- {/block:Title} -->
+						{/block:Title}
 				        <p>
 							<ul>
-								<!-- {block:Lines} -->
+								{block:Lines}
 					                <li>
 					                    {block:Label}<span class="label {Alt}">{Label}</span>{/block:Label}
 					                    {Line}
 					                </li>
-									<!-- {/block:Lines} -->
+									{/block:Lines}
 					        </ul>
 						</p>
     					{block:Date}{block:IfDisqusShortname}<p><a href="{Permalink}#disqus_thread"></a></p>{block:IfDisqusShortname}{/block:Date}
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.post .conversation -->
-			<!-- {/block:Conversation} --> 
+			{/block:Conversation} 
 			      
 			
-			<!--{block:PermalinkPage}-->
-			<!--{block:Date}-->
-			<!--{block:PostNotes}-->
+			{block:PermalinkPage}
+			{block:Date}
+			{block:PostNotes}
 			<div class="entry post_notes">
 				<div class="icon">
 					<a class="permalink" href="{Permalink}"></a>
@@ -377,9 +377,9 @@
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.entry .notes -->
-			<!--{/block:PostNotes}-->
+			{/block:PostNotes}
 			
-			<!--{block:IfDisqusShortname}-->
+			{block:IfDisqusShortname}
             <div class="entry">
     			<div class="content">
     				<div class="caption">
@@ -389,15 +389,15 @@
                     </div>
                 </div>
             </div>
-			<!--{/block:IfDisqusShortname}-->
-			<!--{/block:Date}-->
-			<!--{/block:PermalinkPage}-->			
+			{/block:IfDisqusShortname}
+			{/block:Date}
+			{/block:PermalinkPage}			
 			   	
 			
 			{/block:Posts}
 
 			<!-- PAGINATION -->
-			<!--{block:IndexPage}-->
+			{block:IndexPage}
 			<div class="entry pagination">
 				<div class="icon">
 					
@@ -408,7 +408,7 @@
 					</div><!-- /.caption -->
 				</div><!-- /.content -->
 			</div><!-- /.entry .pagination -->
-			<!-- {/block:IndexPage} -->
+			{/block:IndexPage}
 		</div>
 		
 		{block:IfDisqusShortname}
