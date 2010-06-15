@@ -225,14 +225,10 @@ module Thimblr
           
           only_render_block_for_post_type("Chat", template)
           
-          begin
           if post.content[:'conversation-title'].present?
             render_block "Title", nil, template
             replace_variable "Title", post.content[:'conversation-title'], template
           else
-            strip_block "Title", template
-          end        
-          rescue
             strip_block "Title", template
           end
 
@@ -338,7 +334,6 @@ module Thimblr
         
         # Tags
         
-        begin
         if post.content[:tags].present?
           render_block "HasTags", nil, template
           
@@ -360,14 +355,8 @@ module Thimblr
           render_block("Tags", all_tags, template) 
         else
           strip_block "HasTags", template
-        end
-        rescue
-          strip_block "HasTags", template
-        end
-                
-        
-        
-        
+        end       
+
         all_rendered_posts += template
       end
       
