@@ -231,7 +231,32 @@ module Thimblr
           else
             strip_block "Title", template
           end
+          
 
+          line_template = fetch_content_of_block("Lines")
+
+          # stores the concatenated result of all the rendered following_templates
+          all_lines = String.new
+
+          post.content[:lines].each_with_index do |line, i|
+            temp = line_template.dup
+            
+            if line[:label].present?
+              render_block "Label", nil, temp
+            else
+              strip_block "Label", temp
+            end
+            
+            replace_variable "Label", line[:label], temp
+            replace_variable "Name", line[:name], temp
+            replace_variable "Line", line[:line], temp
+            replace_variable "Alt", i % 2 == 0 ? 'even' : 'odd' , temp
+
+            all_lines += temp
+          end
+
+          render_block("Lines", all_lines, template) 
+          
         when 'Audio'
           
           only_render_block_for_post_type("Audio", template)
