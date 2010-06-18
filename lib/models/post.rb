@@ -6,7 +6,7 @@ class Post < ActiveRecord::Base
                   
   serialize :content, Hash
   
-  belongs_to :imported_blog
+  belongs_to :blog
   
   default_scope :order => "date DESC"
 end

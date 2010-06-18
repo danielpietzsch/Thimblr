@@ -1,6 +1,4 @@
 require 'yaml'
-require 'cgi'
-require 'time'
 require 'rubygems'
 require 'nokogiri'
 require 'active_support'
@@ -39,8 +37,7 @@ module Thimblr
     end
     
     def initialize(theme_code, blog_name = "demo")
-      @blog = Blog.find_by_name(blog_name, :include => [:posts, :pages])
-      template = YAML::load(open("config/demo.yml"))
+      @blog = Blog.find_or_import_by_name("danielpietzsch")
       
       load_default_data
       

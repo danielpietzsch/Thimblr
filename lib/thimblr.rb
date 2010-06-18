@@ -1,16 +1,10 @@
 require 'rubygems'
 require 'sinatra'
-# require 'json'
-# require 'digest/md5'
-# require 'pathname'
 require 'active_record'
-require 'thimblr/parser'
 require 'thimblr/parser_new'
-require 'thimblr/importer'
 require 'models/blog'
 require 'models/post'
 require 'models/page'
-# require 'rbconfig'
 require 'fileutils'
 
 # Database connection and configuration #################
