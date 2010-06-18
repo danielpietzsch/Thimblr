@@ -37,7 +37,7 @@ module Thimblr
     end
     
     def initialize(theme_code, blog_name = "demo")
-      @blog = Blog.find_or_import_by_name("danielpietzsch")
+      @blog = Blog.find_or_import_by_name(blog_name)
       
       load_default_data
       
