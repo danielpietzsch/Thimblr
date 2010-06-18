@@ -1,9 +1,27 @@
 require 'rubygems'
 require 'rake'
 require 'rake/gempackagetask'
+require 'active_record'
+require "#{File.dirname(__FILE__)}/lib/models/blog"
+require "#{File.dirname(__FILE__)}/lib/models/post"
+require "#{File.dirname(__FILE__)}/lib/models/page"
 
 name = "Thimblr"
 version = File.exist?('VERSION') ? File.read('VERSION') : ""
+
+Dir["#{File.dirname(__FILE__)}/lib/tasks/**/*.rake"].sort.each { |ext| load ext }
+
+ActiveRecord::Base.establish_connection(
+  :adapter => "postgresql",
+  :database => "thimblr",
+  :encoding => "UTF8",
+  :username => "developer",
+  :password => "password",
+  :host => "localhost",
+  :port => "5432"
+)
+
+ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 begin
   require 'jeweler'
