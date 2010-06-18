@@ -1,4 +1,4 @@
-class ImportedBlog < ActiveRecord::Base
+class Blog < ActiveRecord::Base
   attr_accessible :title, :description, :name
   
   has_many :posts, :dependent => :destroy

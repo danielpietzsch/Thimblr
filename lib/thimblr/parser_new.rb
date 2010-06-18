@@ -39,7 +39,7 @@ module Thimblr
     end
     
     def initialize(theme_code, blog_name = "demo")
-      @blog = ImportedBlog.find_by_name(blog_name, :include => [:posts, :pages])
+      @blog = Blog.find_by_name(blog_name, :include => [:posts, :pages])
       template = YAML::load(open("config/demo.yml"))
       
       load_default_data
