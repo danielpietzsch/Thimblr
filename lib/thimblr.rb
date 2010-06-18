@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'active_record'
-require 'thimblr/parser_new'
+require 'thimblr/parser'
 require 'models/blog'
 require 'models/post'
 require 'models/page'
@@ -44,18 +44,9 @@ class Thimblr::Application < Sinatra::Base
     erb :index
   end
 
-  # Downloads feed data from a tumblr site
-  get %r{/import/([a-zA-Z0-9-]+)} do |username|
-    begin
-      Thimblr::Import.username(username)
-    rescue Exception => e
-      halt 404, e.message
-    end
-    "Imported as '#{username}'"
-  end
-
   post '/preview' do
-    parser = Thimblr::ParserNew.new(params[:theme_code])
+    # TODO add error handling when no theme_code supplied or doesn't seem to be a tumblr theme
+    parser = Thimblr::Parser.new(params[:theme_code], params[:username] || 'demo')
     parser.render_index
   end
 
