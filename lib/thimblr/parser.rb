@@ -79,7 +79,7 @@ module Thimblr
           replace_variable "URL", page.url, temp
           replace_variable "Label", page.link_title, temp
         
-          all_pages += temp_template
+          all_pages += temp
         end
       
         render_block("HasPages", all_pages)

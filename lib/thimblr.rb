@@ -73,7 +73,9 @@ class Thimblr::Application < Sinatra::Base
 
   post '/preview' do
     # TODO add error handling when no theme_code supplied or doesn't seem to be a tumblr theme
-    parser = Thimblr::Parser.new(params[:theme_code], params[:username] || 'demo')
+    params[:username].blank? ? username = 'demo' : username = params[:username] 
+    
+    parser = Thimblr::Parser.new(params[:theme_code], username)
     parser.render_index
   end
 
