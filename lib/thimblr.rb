@@ -68,7 +68,7 @@ class Thimblr::Application < Sinatra::Base
   end
   
   get '/' do
-    erb :index
+    redirect 'index.html'
   end
 
   post '/preview' do
