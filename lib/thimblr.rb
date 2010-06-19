@@ -7,21 +7,14 @@ require 'models/post'
 require 'models/page'
 require 'fileutils'
 
-# Database connection and configuration #################
+# Database connection #################
 
-ActiveRecord::Base.establish_connection(
-  :adapter => "postgresql",
-  :database => "thimblr",
-  :encoding => "UTF8",
-  :username => "developer",
-  :password => "password",
-  :host => "localhost",
-  :port => "5432"
-)
+dbconfig = YAML.load(File.read('config/database.yml'))
+ActiveRecord::Base.establish_connection dbconfig['development']
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-##########################################################
+#######################################
 
 class Thimblr::Application < Sinatra::Base
   
