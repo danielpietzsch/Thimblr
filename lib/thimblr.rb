@@ -44,7 +44,7 @@ class Thimblr::Application < Sinatra::Base
         t.string :postid
         t.text :content
         t.references :blog
-        t.timestamps 
+        t.timestamps
       end
       
       create_table :pages do |t|

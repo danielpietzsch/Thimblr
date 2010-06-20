@@ -13,7 +13,7 @@
 		}
 		
 		#container {
-			width: 900px;
+			width: 850px;
 			margin: 0 auto;
 		}
 		
@@ -32,6 +32,10 @@
 			margin-left: 15px;
 		}
 		
+		ol, ul {
+			list-style-position: inside;
+		}
+		
 		#content {
 			background-color: #F0F4F8;
 			border: 2px solid #FFFFFF;
@@ -42,6 +46,31 @@
 			color: #3C4142;
 			margin: 15px 0;
 			font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+			font-size: 1em;
+			line-height: 1.4em;
+		}
+		
+		#content a {
+			color: #353738;
+		}
+		
+		section {
+			margin-bottom: 40px;
+		}
+		
+		section h3 {
+			font-weight: normal;
+			color: #2A2F30;
+			font-size: 1.3em;
+			margin-bottom: 10px;
+		}
+		
+		section h4 {
+			font-weight: normal;
+			color: #2A2F30;
+			font-size: 1.1em;
+			margin-top: 10px;
+			margin-bottom: 5px;
 		}
 		
 		footer {
@@ -66,13 +95,42 @@
 		<h2>The easiest way to preview your Tumblr themes.</h2>
 		
 		<div id="content">
-			<p>Some explanation and instructions go here...</p>
+			<section>
+				<h3>What is Thimblr?</h3>
+				<p>Thimblr lets you preview your <a href="http://www.tumblr.com">Tumblr</a> themes right from your favorite editor. It protects your fingers from tedious copying and pasting a Tumblr template into their customize tool.</p>
+			</section>
+			<section>
+				<h3>How do I use it?</h3>
+				<p>Here is a list of editors that support Thimblr and instructions how to use them:</p>
+				<h4>Textmate</h4>
+				<ol>
+					<li>Download this version of the Tumblr Themes Textmate bundle: <a href="http://example.com/">Tumblr Themes Bundle</a>.</li>
+					<li>Copy it to ~/Library/Application Support/Textmate/Bundles.</li>
+					<li>Open Textmate and reload your bundles (Bundles &rarr; Bundle Editor &rarr; Reload Bundles).</li>
+					<li>Open your Tumblr theme template and select Bundles &rarr; Tumblr Themes &rarr; Preview with Thimblr.</li>
+					<li>Optionally, you can specify a shell variable 'TUMBLR_USERNAME' in the Textmate Preferences with your Tumblr username as the value. This way, you can preview your theme with your own real data.</li>
+				</ol>
+			</section>
+			<section>
+				<h3>How does it work?</h3>
+				<p>Thimblr does a bad impression of Tumblr's templating system. If you could imagine a terrible impression of Jerry Lewis, and Jerry Lewis was Tumblr's templating system, that's what Thimblr is. It's not foolproof, and it can be unpredictable, but it should give you a good approximation of what your theme will look like. It tries its best to conform to <a href="http://www.tumblr.com/docs/en/custom_themes" title="Creating a custom HTML theme | Tumblr">Tumblr's theme docs</a>.</p>
+			</section>
+			<section>
+				<h3>Support any editor</h3>
+				<p>If you want to support your favorite editor, you just need to find a way to send a HTTP POST request to <code>http://thimblr.heroku.com/preview</code> with these parameters:</p>
+				<ul>
+					<li><code>theme_code</code>: the whole template code.</li>
+					<li><code>username</code> (optional): the Tumblr username to preview themes with custom data.</li>
+				</ul>
+			</section>
 		</div>
 		
 		<footer>
-			<p>A service by <a href="http://www.danielpietzsch.com">Daniel Pietzsch</a>, based on code by <a href="http://jphastings.tumblr.com">JP Hastings-Spital</a> and <a href="http://markwunsch.com">Mark Wunsch</a>.</p>
+			<p>A service by <a href="http://www.danielpietzsch.com">Daniel Pietzsch</a>.</p>
+			<p>It's based on code by <a href="http://jphastings.tumblr.com">JP Hastings-Spital</a> and <a href="http://markwunsch.com">Mark Wunsch</a>.</p>
 			<p>Name "Thimblr" by JP Hastings-Spital. Original idea and name "Thimble" by Mark Wunsch.</p>
-			<p>This current design is <em>very</em> inspired by <a href="http://www.tumblr.com">Tumblr</a>. ;-)</p>
+			<p>The current design of this site is <em>very</em> inspired by <a href="http://www.tumblr.com">Tumblr</a>. ;-)</p>
+			<p>This is Thimblr version 0.1</p>
 		</footer>
 	</div>
 
