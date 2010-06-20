@@ -1,7 +1,3 @@
-#require "#{File.dirname(__FILE__)}/../thimblr.rb"
-#require 'rubygems'
-#require 'active_record'
-
 namespace :blog do
 
   desc "Removes data of a blog and all its posts and pages"
