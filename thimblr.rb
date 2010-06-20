@@ -10,11 +10,11 @@ require 'fileutils'
 class Thimblr::Application < Sinatra::Base
   
   configure do |s|
-    set :root, File.join(File.dirname(__FILE__),"..")
+    set :root, File.dirname(__FILE__)
     Dir.chdir root
     set :config, File.join(root,'config')
     
-    enable :sessions
+    # enable :sessions
     set :bind, '127.0.0.1'
     
     
@@ -59,12 +59,6 @@ class Thimblr::Application < Sinatra::Base
       puts "DB schema already exists. Not creating again."
     end
     
-  end
-
-  helpers do
-    def get_relative(path)
-      Pathname.new(path).relative_path_from(Pathname.new(File.expand_path(settings.root))).to_s
-    end
   end
   
   get '/' do
