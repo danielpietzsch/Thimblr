@@ -2,14 +2,14 @@ require 'rubygems'
 require 'rake'
 require 'rake/gempackagetask'
 require 'active_record'
-require "#{File.dirname(__FILE__)}/lib/models/blog"
-require "#{File.dirname(__FILE__)}/lib/models/post"
-require "#{File.dirname(__FILE__)}/lib/models/page"
+require "#{File.dirname(__FILE__)}/models/blog"
+require "#{File.dirname(__FILE__)}/models/post"
+require "#{File.dirname(__FILE__)}/models/page"
 
 name = "Thimblr"
 version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
-Dir["#{File.dirname(__FILE__)}/lib/tasks/**/*.rake"].sort.each { |ext| load ext }
+Dir["#{File.dirname(__FILE__)}/tasks/**/*.rake"].sort.each { |ext| load ext }
 
 ActiveRecord::Base.establish_connection(
   :adapter => "postgresql",
