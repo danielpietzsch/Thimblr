@@ -64,6 +64,11 @@ class Thimblr::Application < Sinatra::Base
   get '/' do
     redirect 'index.html'
   end
+  
+  get '/env' do
+    content_type 'text/plain'
+    ENV.inspect
+  end
 
   post '/preview' do
     # TODO add error handling when no theme_code supplied or doesn't seem to be a tumblr theme
