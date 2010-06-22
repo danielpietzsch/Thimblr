@@ -8,7 +8,7 @@ require 'models/page'
 
 class Thimblr::Application < Sinatra::Base
   
-  configure do |s|
+  # configure do |s|
     # set :root, File.dirname(__FILE__)
     # Dir.chdir root
     # set :config, File.join(root,'config')
@@ -58,7 +58,7 @@ class Thimblr::Application < Sinatra::Base
     #      puts "DB schema already exists. Not creating again."
     #    end
     
-  end
+  # end
   
   get '/' do
     redirect 'index.html'
