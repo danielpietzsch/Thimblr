@@ -6,7 +6,7 @@ require 'models/blog'
 require 'models/post'
 require 'models/page'
 
-class Thimblr::Application < Sinatra::Base
+# class Thimblr::Application < Sinatra::Base
   
   # configure do |s|
     # set :root, File.dirname(__FILE__)
@@ -77,4 +77,4 @@ class Thimblr::Application < Sinatra::Base
     parser.render_index
   end
 
-end
+#end
