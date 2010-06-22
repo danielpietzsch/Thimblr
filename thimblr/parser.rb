@@ -251,11 +251,11 @@ require 'active_support'
             
             if line[:label].present?
               render_block "Label", nil, temp
+              replace_variable "Label", line[:label], temp
             else
               strip_block "Label", temp
             end
-            
-            replace_variable "Label", line[:label], temp
+        
             replace_variable "Name", line[:name], temp
             replace_variable "Line", line[:line], temp
             replace_variable "Alt", i % 2 == 0 ? 'even' : 'odd' , temp
