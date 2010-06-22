@@ -508,7 +508,7 @@ require 'active_support'
     # Scans the whole theme and replaces a variable with the replacement provided
     def replace_variable(var_name, replacement, string = @theme)
       print "Replacing variable {#{var_name}}..."
-      if string.gsub!(/\{#{var_name}\}/i, replacement)
+      if string.gsub!(/\{#{var_name}\}/i, replacement) and replacement.present?
         puts "with '#{replacement}'"
       else
         puts "no match found!"
