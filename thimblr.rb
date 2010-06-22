@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'active_record'
-require 'parser'
+require 'thimblr/parser'
 require 'models/blog'
 require 'models/post'
 require 'models/page'
