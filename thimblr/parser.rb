@@ -67,9 +67,9 @@ require 'active_support'
         
         
       # Pages
-      if @blog.pages.present?   
-        page_template = fetch_content_of_block("Pages")
+      page_template = fetch_content_of_block("Pages")
       
+      if @blog.pages.present? and page_template.present?
         all_pages = String.new
       
         @blog.pages.each do |page|
