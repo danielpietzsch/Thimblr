@@ -23,26 +23,26 @@ ActiveRecord::Base.establish_connection(
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = name
-    gem.version = version
-    gem.summary = %Q{Helper for Tumblr theme editors}
-    gem.description = %Q{A webserver built to help you test tumblr themes as you edit them}
-    gem.email = "jphastings@gmail.com"
-    gem.homepage = "http://github.com/jphastings/Thimblr"
-    gem.author = "JP Hastings-Spital"
-    gem.add_dependency "sinatra",'>= 1.0'
-    gem.add_dependency "launchy"
-    gem.add_dependency "nokogiri"
-    gem.files = FileList['lib/**/*','themes/*','config/*','views/*','public/**/**/*']
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
-end
+# begin
+#   require 'jeweler'
+#   Jeweler::Tasks.new do |gem|
+#     gem.name = name
+#     gem.version = version
+#     gem.summary = %Q{Helper for Tumblr theme editors}
+#     gem.description = %Q{A webserver built to help you test tumblr themes as you edit them}
+#     gem.email = "jphastings@gmail.com"
+#     gem.homepage = "http://github.com/jphastings/Thimblr"
+#     gem.author = "JP Hastings-Spital"
+#     gem.add_dependency "sinatra",'>= 1.0'
+#     gem.add_dependency "launchy"
+#     gem.add_dependency "nokogiri"
+#     gem.files = FileList['lib/**/*','themes/*','config/*','views/*','public/**/**/*']
+#     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+#   end
+#   Jeweler::GemcutterTasks.new
+# rescue LoadError
+#   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
+# end
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
