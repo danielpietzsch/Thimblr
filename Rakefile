@@ -11,16 +11,8 @@ version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
 Dir["#{File.dirname(__FILE__)}/tasks/**/*.rake"].sort.each { |ext| load ext }
 
-ActiveRecord::Base.establish_connection(
-  :adapter => "postgresql",
-  :database => "thimblr",
-  :encoding => "UTF8",
-  :username => "developer",
-  :password => "password",
-  :host => "localhost",
-  :port => "5432"
-)
-
+dbconfig = YAML.load(File.read('config/database.yml'))
+ActiveRecord::Base.establish_connection dbconfig['production']
 ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 # begin
