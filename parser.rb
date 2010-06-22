@@ -6,7 +6,6 @@ require 'active_support'
 # OPTIMIZE use options hashes for improved readability
 # Refactor a lot!
 
-module Thimblr
   class Parser                    
     Defaults = {
       'PostsPerPage'       => 10,
@@ -606,4 +605,3 @@ module Thimblr
     
     
   end # of class
-end # of module

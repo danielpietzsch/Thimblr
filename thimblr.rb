@@ -65,6 +65,6 @@ post '/preview' do
   # TODO add error handling when no theme_code supplied or doesn't seem to be a tumblr theme
   params[:username].blank? ? username = 'demo' : username = params[:username] 
   
-  parser = Thimblr::Parser.new(params[:theme_code], username)
+  parser = Parser.new(params[:theme_code], username)
   parser.render_index
 end
