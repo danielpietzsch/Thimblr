@@ -26,37 +26,37 @@ class Thimblr::Application < Sinatra::Base
 
     #######################################
     
-    begin
-    ActiveRecord::Schema.define do
-      create_table :blogs do |t|
-        t.string :title
-        t.text :description
-        t.string :name
-        t.timestamps
-      end
-      
-      create_table :posts do |t|
-        t.string :url, :url_with_slug, :post_type
-        t.datetime :date_gmt, :date
-        t.string :unix_timestamp, :format, :reblog_key, :slug
-        t.integer :width, :height, :audio_plays
-        t.string :postid
-        t.text :content
-        t.references :blog
-        t.timestamps
-      end
-      
-      create_table :pages do |t|
-        t.string :url, :title, :link_title
-        t.boolean :render_in_theme
-        t.text :body
-        t.references :blog
-        t.timestamps
-      end
-    end
-    rescue ActiveRecord::StatementInvalid
-      puts "DB schema already exists. Not creating again."
-    end
+    # begin
+    #    ActiveRecord::Schema.define do
+    #      create_table :blogs do |t|
+    #        t.string :title
+    #        t.text :description
+    #        t.string :name
+    #        t.timestamps
+    #      end
+    #      
+    #      create_table :posts do |t|
+    #        t.string :url, :url_with_slug, :post_type
+    #        t.datetime :date_gmt, :date
+    #        t.string :unix_timestamp, :format, :reblog_key, :slug
+    #        t.integer :width, :height, :audio_plays
+    #        t.string :postid
+    #        t.text :content
+    #        t.references :blog
+    #        t.timestamps
+    #      end
+    #      
+    #      create_table :pages do |t|
+    #        t.string :url, :title, :link_title
+    #        t.boolean :render_in_theme
+    #        t.text :body
+    #        t.references :blog
+    #        t.timestamps
+    #      end
+    #    end
+    #    rescue ActiveRecord::StatementInvalid
+    #      puts "DB schema already exists. Not creating again."
+    #    end
     
   end
   
