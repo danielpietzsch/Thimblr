@@ -1,5 +1,4 @@
 nokogiri
-fileutils
 yaml
 uri
 open-uri

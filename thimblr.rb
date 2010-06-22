@@ -5,7 +5,6 @@ require 'thimblr/parser'
 require 'models/blog'
 require 'models/post'
 require 'models/page'
-require 'fileutils'
 
 class Thimblr::Application < Sinatra::Base
   
