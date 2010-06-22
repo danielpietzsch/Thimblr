@@ -20,7 +20,7 @@ class Thimblr::Application < Sinatra::Base
     # Database connection #################
 
     dbconfig = YAML.load(File.read('config/database.yml'))
-    ActiveRecord::Base.establish_connection dbconfig['development']
+    # ActiveRecord::Base.establish_connection dbconfig['development']
 
     ActiveRecord::Base.logger = Logger.new(STDOUT)
 
