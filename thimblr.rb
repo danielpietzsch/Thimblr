@@ -9,20 +9,20 @@ require 'models/page'
 class Thimblr::Application < Sinatra::Base
   
   configure do |s|
-    set :root, File.dirname(__FILE__)
-    Dir.chdir root
-    set :config, File.join(root,'config')
-    
-    # enable :sessions
-    set :bind, '127.0.0.1'
-    
-    
-    # Database connection #################
-
-    dbconfig = YAML.load(File.read('config/database.yml'))
+    # set :root, File.dirname(__FILE__)
+    # Dir.chdir root
+    # set :config, File.join(root,'config')
+    # 
+    # # enable :sessions
+    # # set :bind, '127.0.0.1'
+    # 
+    # 
+    # # Database connection #################
+    # 
+    # dbconfig = YAML.load(File.read('config/database.yml'))
     # ActiveRecord::Base.establish_connection dbconfig['development']
-
-    ActiveRecord::Base.logger = Logger.new(STDOUT)
+    # 
+    # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
     #######################################
     
