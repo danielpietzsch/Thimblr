@@ -9,7 +9,9 @@ require 'models/page'
 # class Thimblr::Application < Sinatra::Base
 
 configure :production do
-  ActiveRecord::Base.establish_connection ENV['DATABASE_URL']
+  
+  dbconfig = YAML.load(File.read('config/database.yml'))
+  ActiveRecord::Base.establish_connection dbconfig['production']
   ActiveRecord::Base.logger = Logger.new(STDOUT)
   
   begin
