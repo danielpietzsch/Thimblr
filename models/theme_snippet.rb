@@ -75,6 +75,12 @@ class ThemeSnippet < String
     self.render_block post_type, nil
   end
   
+  # returns the contents of the provided block
+  def fetch_content_of_block(block_name)
+    self.match(ThemeSnippet.block_regex_pattern_for(block_name))
+    block_content = $2 #@theme.match(ThemeSnippet.block_regex_pattern_for(block_name))[2]
+  end
+  
   def block_exists?(block_name)
     if self.match(ThemeSnippet.block_regex_pattern_for(block_name))
       true

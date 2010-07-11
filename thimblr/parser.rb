@@ -38,7 +38,6 @@ require 'active_support'
       load_default_data
       
       @theme = ThemeSnippet.new(theme_code)
-      # @theme = theme_code
       
       @apid = 0 # TODO rename
     end
@@ -63,9 +62,8 @@ require 'active_support'
         @theme.strip_block "Description"
       end
         
-        
       # Pages
-      page_template = ThemeSnippet.new(fetch_content_of_block("Pages"))
+      page_template = @theme.fetch_content_of_block("Pages")
       
       if @blog.pages.present? and page_template.present?
         all_pages = ThemeSnippet.new
@@ -83,9 +81,7 @@ require 'active_support'
       else
         @theme.strip_block "HasPages"
       end
-        
-        
-      
+
       #pagination
       @theme.replace_variable("CurrentPage", "1")
       @theme.replace_variable("NextPage", "/page/2")
@@ -132,7 +128,7 @@ require 'active_support'
     
     
     def render_posts
-      posts_template = ThemeSnippet.new(fetch_content_of_block("Posts"))
+      posts_template = @theme.fetch_content_of_block("Posts")
     
       #stores all rendered posts, concatenated together
       all_rendered_posts = ThemeSnippet.new
@@ -239,7 +235,7 @@ require 'active_support'
           end
           
 
-          line_template = ThemeSnippet.new(fetch_content_of_block("Lines"))
+          line_template = @theme.fetch_content_of_block("Lines")
 
           # stores the concatenated result of all the rendered following_templates
           all_lines = ThemeSnippet.new
@@ -364,7 +360,7 @@ require 'active_support'
         template.replace_variable "Timestamp", post.unix_timestamp
         
         # Tags
-        tag_template = ThemeSnippet.new(fetch_content_of_block("Tags"))
+        tag_template = @theme.fetch_content_of_block("Tags")
         
         if post.content[:tags].present? and tag_template.present?
           template.render_block "HasTags", nil
@@ -392,7 +388,6 @@ require 'active_support'
       
       @theme.render_block "Posts", all_rendered_posts
     end
-    
     
     # stuff that is currently unsupported by thimblr
     # This also serves as a TODO list
@@ -428,7 +423,7 @@ require 'active_support'
     # 4. Render block 'Followed' and replace original contents with the concatenated string
     # 5. Render block 'Following' 
     def render_following
-      following_template = fetch_content_of_block("Followed")
+      following_template = @theme.fetch_content_of_block("Followed")
       
       if following_template.present?
         # stores the concatenated result of all the rendered following_templates
@@ -455,18 +450,6 @@ require 'active_support'
         @theme.render_block "Followed", rendered_followed
         @theme.render_block "Following"
       end
-    end
-    
-    # returns the contents of the provided block
-    def fetch_content_of_block(block_name)
-      @theme.match(block_regex_pattern_for(block_name))
-      block_content = $2 #@theme.match(block_regex_pattern_for(block_name))[2]
-    end
-    
-    # The regular expression to match a block and its contents
-    # matchdata $2 will be the content of the block
-    def block_regex_pattern_for(block_name)  
-      Regexp.new(/\{block:(#{block_name})\}((.|\s)*?)\{\/block:(#{block_name})\}/i)
     end
     
     # handles <meta> tags Appearance Options
@@ -526,7 +509,5 @@ require 'active_support'
       # Removing {CustomCSS}
       @theme.strip_variable("CustomCSS")
     end # of method generate_meta
-    
-    
-    
+        
   end # of class
