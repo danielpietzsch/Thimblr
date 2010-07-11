@@ -49,8 +49,8 @@ require 'active_support'
     def render_index
       parse_meta_options
       
-      render_block("IndexPage")
-      render_block("More")
+      @theme.render_block("IndexPage")
+      @theme.render_block("More")
       
       render_posts unless @blog.posts.blank?
       
@@ -59,11 +59,11 @@ require 'active_support'
       @theme.replace_variable "Title", @blog.title
       
       if @blog.description.present?
-        render_block "Description"
+        @theme.render_block "Description"
         @theme.replace_variable "Description", @blog.description
         @theme.replace_variable "MetaDescription", @blog.description.gsub(/\<\/?[^\>]*\>/, "")
       else
-        strip_block "Description"
+        @theme.strip_block "Description"
       end
         
         
@@ -82,9 +82,9 @@ require 'active_support'
           all_pages += temp
         end
       
-        render_block("HasPages", all_pages)
+        @theme.render_block("HasPages", all_pages)
       else
-        strip_block "HasPages"
+        @theme.strip_block "HasPages"
       end
         
         
@@ -94,9 +94,9 @@ require 'active_support'
       @theme.replace_variable("NextPage", "/page/2")
       @theme.replace_variable("TotalPages", "100")
       
-      render_block("Pagination")
-      render_block("NextPage")
-      strip_block("PreviousPage")
+      @theme.render_block("Pagination")
+      @theme.render_block("NextPage")
+      @theme.strip_block("PreviousPage")
       
       render_following unless @following.blank?
       
@@ -114,12 +114,12 @@ require 'active_support'
       
       disable_unsupported_stuff
       
-      render_block "SearchForm"
+      @theme.render_block "SearchForm"
       
-      strip_block "PermalinkPage"
-      strip_block "Permalink" # Seems to be an old version of PermalinkPage!?!
-      strip_block "PostTitle"
-      strip_block "PostSummary"
+      @theme.strip_block "PermalinkPage"
+      @theme.strip_block "Permalink" # Seems to be an old version of PermalinkPage!?!
+      @theme.strip_block "PostTitle"
+      @theme.strip_block "PostSummary"
       
       # cleanup stuff
       @theme.gsub!(/\{block:([A-Za-z][A-Za-z0-9]*)\}((.|\s)*?)\{\/block:([A-Za-z][A-Za-z0-9]*)\}/i, '')
@@ -150,9 +150,9 @@ require 'active_support'
           only_render_block_for_post_type(post.post_type, template) # TODO Regular or Text
           
           if post.content[:'regular-title'].nil?
-            strip_block "Title", template
+            template.strip_block "Title"
           else
-            render_block "Title", nil, template
+            template.render_block "Title", nil
             template.replace_variable "Title", post.content[:'regular-title']
           end
           
@@ -180,19 +180,19 @@ require 'active_support'
           end
           
           if post.content[:'photo-caption'].nil?
-            strip_block "Caption", template
+            template.strip_block "Caption"
             template.strip_variable "PhotoAlt"
           else
-            render_block "Caption", nil, template
+            template.render_block "Caption", nil
             template.replace_variable "Caption", post.content[:'photo-caption']
             # OPTIMIZE wrap regex in meaningful method name!?
             template.replace_variable "PhotoAlt", post.content[:'photo-caption'].gsub(/\<\/?[^\>]*\>/, "")
           end
           
           if post.content[:photo_url_1280].present? and post.content[:photo_url_1280] != post.content[:photo_url_500]
-            render_block "HighRes", nil, template
+            template.render_block "HighRes", nil
           else
-            strip_block "HighRes", template
+            template.strip_block "HighRes"
           end
           
         # TODO render photoset posts
@@ -208,10 +208,10 @@ require 'active_support'
           template.replace_variable "Length", "medium" # TODO use 'real' values
           
           if post.content[:'quote-source'].present?
-            render_block "Source", nil, template
+            template.render_block "Source", nil
             template.replace_variable "Source", post.content[:'quote-source']
           else
-            strip_block "Source", template
+            template.strip_block "Source"
           end
           
         when 'Link'
@@ -223,10 +223,10 @@ require 'active_support'
           template.replace_variable "Target", "target=\"_blank\""
           
           if post.content[:'link-description'].present?
-            render_block "Description", nil, template
+            template.render_block "Description", nil
             template.replace_variable "Description", post.content[:'link-description']
           else
-            strip_block "Description", template
+            template.strip_block "Description"
           end
           
         #TODO render chat posts 
@@ -235,10 +235,10 @@ require 'active_support'
           only_render_block_for_post_type(post.post_type, template)
           
           if post.content[:'conversation-title'].present?
-            render_block "Title", nil, template
+            template.render_block "Title", nil
             template.replace_variable "Title", post.content[:'conversation-title']
           else
-            strip_block "Title", template
+            template.strip_block "Title"
           end
           
 
@@ -251,11 +251,11 @@ require 'active_support'
             temp = line_template.dup
             
             if line[:label].present?
-              render_block "Label", nil, temp
+              temp.render_block "Label", nil
               temp.replace_variable "Label", line[:label]
               temp.replace_variable "Name", line[:name]
             else
-              strip_block "Label", temp
+              temp.strip_block "Label"
             end
         
             temp.replace_variable "Line", line[:line]
@@ -264,17 +264,17 @@ require 'active_support'
             all_lines += temp
           end
 
-          render_block("Lines", all_lines, template) 
+          template.render_block "Lines", all_lines
           
         when 'Audio'
           
           only_render_block_for_post_type("Audio", template)
           
           if post.content[:'audio-caption'].present?
-            render_block "Caption", nil, template
+            template.render_block "Caption", nil
             template.replace_variable "Caption", post.content[:'audio-caption']
           else
-            strip_block "Caption", template
+            template.strip_block "Caption"
           end
           
           template.replace_variable "AudioPlayer", post.content[:'audio-player']
@@ -290,23 +290,23 @@ require 'active_support'
           # OPTIMIZE make proper pluralization
           template.replace_variable "PlayCountWithLabel", post.audio_plays.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2') + " plays"
           
-          strip_block "ExternalAudio", template # TODO find out how to render this properly
+          template.strip_block "ExternalAudio" # TODO find out how to render this properly
           
           # TODO find out how to read ID3 tags and render this properly
-          strip_block "AlbumArt", template
-          strip_block "Artist", template
-          strip_block "Album", template
-          strip_block "TrackName", template
+          template.strip_block "AlbumArt"
+          template.strip_block "Artist"
+          template.strip_block "Album"
+          template.strip_block "TrackName"
           
         when 'Video'
           
           only_render_block_for_post_type "Video", template
           
           if post.content[:'video-caption'].present?
-            render_block "Caption", nil, template
+            template.render_block "Caption", nil
             template.replace_variable "Caption", post.content[:'video-caption']
           else
-            strip_block "Caption", template
+            template.strip_block "Caption"
           end
           
           # TODO fix the sizes
@@ -339,7 +339,7 @@ require 'active_support'
         template.replace_variable "PostID", post.postid
         
         # Dates http://www.tumblr.com/docs/en/custom_themes#dates
-        render_block "Date", nil, template
+        template.render_block "Date", nil
         template.replace_variable "DayOfMonth", post.date.day.to_s
         template.replace_variable "DayOfMonthWithZero", post.date.strftime("%d")
         template.replace_variable "DayOfWeek", post.date.strftime("%A")
@@ -370,7 +370,7 @@ require 'active_support'
         tag_template = ThemeSnippet.new(fetch_content_of_block("Tags"))
         
         if post.content[:tags].present? and tag_template.present?
-          render_block "HasTags", nil, template
+          template.render_block "HasTags", nil
 
           # stores the concatenated result of all the rendered following_templates
           all_tags = ThemeSnippet.new
@@ -385,15 +385,15 @@ require 'active_support'
             all_tags += temp
           end
 
-          render_block("Tags", all_tags, template) 
+          template.render_block "Tags", all_tags
         else
-          strip_block "HasTags", template
+          template.strip_block "HasTags"
         end
 
         all_rendered_posts += template
       end
       
-      render_block "Posts", all_rendered_posts
+      @theme.render_block "Posts", all_rendered_posts
     end
     
     
@@ -422,9 +422,9 @@ require 'active_support'
       
       types_to_remove = PostTypes.reject { |type| type == post_type }
       
-      types_to_remove.each { |type| strip_block(type, posts_template) }
+      types_to_remove.each { |type| posts_template.strip_block(type) }
       
-      render_block post_type, nil, posts_template
+      posts_template.render_block post_type, nil
     end
     
     
@@ -440,27 +440,27 @@ require 'active_support'
     # stuff that is currently unsupported by thimblr
     # This also serves as a TODO list
     def disable_unsupported_stuff
-      strip_block "Likes"
-      strip_block "SearchPage"
+      @theme.strip_block "Likes"
+      @theme.strip_block "SearchPage"
       @theme.replace_variable "SearchQuery", ""
       @theme.replace_variable "URLSafeSearchQuery", ""
       @theme.replace_variable "SearchResultCount", ""
-      strip_block "NoSearchResults"
-      strip_block "Twitter"
-      strip_block "TagPage"
-      strip_block "DayPage"
-      strip_block "DayPagination"
-      strip_block "PreviousDayPage"
-      strip_block "NextDayPage"
-      strip_block "PostNotes"
-      strip_block "NoteCount"
-      strip_block "GroupMembers"
-      strip_block "GroupMember"
-      strip_block "RebloggedFrom"
-      strip_block "Reblog"
-      render_block "NotReblog" # OPTIMIZE currently only enabled because testing with Redux theme
-      strip_block "FromMobile"
-      strip_block "FromBookmarklet"
+      @theme.strip_block "NoSearchResults"
+      @theme.strip_block "Twitter"
+      @theme.strip_block "TagPage"
+      @theme.strip_block "DayPage"
+      @theme.strip_block "DayPagination"
+      @theme.strip_block "PreviousDayPage"
+      @theme.strip_block "NextDayPage"
+      @theme.strip_block "PostNotes"
+      @theme.strip_block "NoteCount"
+      @theme.strip_block "GroupMembers"
+      @theme.strip_block "GroupMember"
+      @theme.strip_block "RebloggedFrom"
+      @theme.strip_block "Reblog"
+      @theme.render_block "NotReblog" # OPTIMIZE currently only enabled because testing with Redux theme
+      @theme.strip_block "FromMobile"
+      @theme.strip_block "FromBookmarklet"
     end
     
     # renders blocks 'Following' and 'Followed'
@@ -495,8 +495,8 @@ require 'active_support'
           rendered_followed += rendered_template
         end
       
-        render_block("Followed", rendered_followed)
-        render_block("Following")
+        @theme.render_block "Followed", rendered_followed
+        @theme.render_block "Following"
       end
     end
     
@@ -510,27 +510,6 @@ require 'active_support'
     # matchdata $2 will be the content of the block
     def block_regex_pattern_for(block_name)  
       Regexp.new(/\{block:(#{block_name})\}((.|\s)*?)\{\/block:(#{block_name})\}/i)
-    end
-    
-    # looks for the block named 'block_name'
-    # and replaces the whole block with just the content of the block or a provided replacement for this content
-    def render_block(block_name, replacement = nil, string = @theme)
-      print "Rendering block {block:#{block_name}}..."
-      if string.gsub!(block_regex_pattern_for(block_name)) { |match| replacement || $2 }
-        puts "found and replaced!"
-      else
-        puts "no match found!"
-      end
-    end
-    
-    # removes a whole block
-    def strip_block(block_name, string = @theme)
-      print "Stripping block {block:#{block_name}}..."
-      if string.gsub!(block_regex_pattern_for(block_name), '')
-        puts "removed!"
-      else
-        puts "no match found!"
-      end
     end
     
     # handles <meta> tags Appearance Options
@@ -552,12 +531,12 @@ require 'active_support'
         if element['name'].include? 'if:'
           if element['content'] == "1"
             # converts something like "if:Show People I Follow" to "IfShowPeopleIFollow"
-            render_block(element['name'].titlecase.gsub(/\W/, ''))
+            @theme.render_block(element['name'].titlecase.gsub(/\W/, ''))
             # converts something like "if:Show People I Follow" to "IfNotShowPeopleIFollow"
-            strip_block(element['name'].titlecase.gsub(':', 'Not').gsub(/\W/, ''))
+            @theme.strip_block(element['name'].titlecase.gsub(':', 'Not').gsub(/\W/, ''))
           else
-            strip_block(element['name'].titlecase.gsub(/\W/, ''))
-            render_block(element['name'].titlecase.gsub(':', 'Not').gsub(/\W/, ''))
+            @theme.strip_block(element['name'].titlecase.gsub(/\W/, ''))
+            @theme.render_block(element['name'].titlecase.gsub(':', 'Not').gsub(/\W/, ''))
           end
         end
         
@@ -566,9 +545,9 @@ require 'active_support'
           if element['content'].present?
             @theme.replace_variable(element['name'], element['content'])
             # converts something like "text:Flickr Username" to "IfFlickrUsername"
-            render_block(element['name'].gsub('text', 'if').titlecase.gsub(/\W/, ''))
+            @theme.render_block(element['name'].gsub('text', 'if').titlecase.gsub(/\W/, ''))
           else
-            strip_block(element['name'].gsub('text', 'if').titlecase.gsub(/\W/, ''))
+            @theme.strip_block(element['name'].gsub('text', 'if').titlecase.gsub(/\W/, ''))
           end
         end
         
@@ -577,12 +556,12 @@ require 'active_support'
           if element['content'].present?
             @theme.replace_variable(element['name'], element['content'])
             # converts something like "image:Header" Username" to "IfHeaderImage"
-            render_block(element['name'].gsub('image', 'if').titlecase.gsub(/\W/, '') + "Image")
+            @theme.render_block(element['name'].gsub('image', 'if').titlecase.gsub(/\W/, '') + "Image")
             # converts something like "image:Header" Username" to "IfNotHeaderImage"
-            strip_block(element['name'].gsub('image', 'if').titlecase.gsub(':', 'Not').gsub(/\W/, '') + "Image")
+            @theme.strip_block(element['name'].gsub('image', 'if').titlecase.gsub(':', 'Not').gsub(/\W/, '') + "Image")
           else
-            strip_block(element['name'].gsub('image', 'if').titlecase.gsub(/\W/, '') + "Image")
-            render_block(element['name'].gsub('image', 'if').titlecase.gsub(':', 'Not').gsub(/\W/, '') + "Image")
+            @theme.strip_block(element['name'].gsub('image', 'if').titlecase.gsub(/\W/, '') + "Image")
+            @theme.render_block(element['name'].gsub('image', 'if').titlecase.gsub(':', 'Not').gsub(/\W/, '') + "Image")
           end
         end
       end # of meta_elements each
