@@ -1,6 +1,11 @@
+# A class to better represent parts of a Tumblr theme template
 class ThemeSnippet < String
   
+  # Constants ################################################
+  
   PostTypes = ["Text", "Regular", "Photo", "Photoset", "Quote", "Link", "Chat", "Conversation", "Audio", "Video", "Answer"]
+  
+  # Class methods ############################################
   
   # The regular expression to match a block and its contents
   # matchdata $2 will be the content of the block
@@ -8,9 +13,12 @@ class ThemeSnippet < String
     Regexp.new(/\{block:(#{block_name})\}((.|\s)*?)\{\/block:(#{block_name})\}/i)
   end
   
+  # Instance methods #########################################
+  
   # Scans the whole theme and replaces a variable with the replacement provided
+  # OPTIMIZE remove puts statements when not needed anymore
   def replace_variable(var_name, replacement)
-    print "[ThemeSnippet] Replacing variable {#{var_name}}..."
+    print "Replacing variable {#{var_name}}..."
     if self.gsub!(/\{#{var_name}\}/i, replacement) and replacement.present?
       puts "with '#{replacement}'"
     else
@@ -26,8 +34,9 @@ class ThemeSnippet < String
   
   # looks for the block named 'block_name'
   # and replaces the whole block with just the content of the block or a provided replacement for this content
+  # OPTIMIZE remove puts statements when not needed anymore
   def render_block(block_name, replacement = nil)
-    print "[ThemeSnippet] Rendering block {block:#{block_name}}..."
+    print "Rendering block {block:#{block_name}}..."
     if self.gsub!(ThemeSnippet.block_regex_pattern_for(block_name)) { |match| replacement || $2 }
       puts "found and replaced!"
     else
@@ -36,8 +45,9 @@ class ThemeSnippet < String
   end
   
   # removes a whole block
+  # OPTIMIZE remove puts statements when not needed anymore
   def strip_block(block_name)
-    print "[ThemeSnippet] Stripping block {block:#{block_name}}..."
+    print "Stripping block {block:#{block_name}}..."
     if self.gsub!(ThemeSnippet.block_regex_pattern_for(block_name), '')
       puts "removed!"
     else
