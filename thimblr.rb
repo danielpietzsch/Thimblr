@@ -5,6 +5,7 @@ require 'thimblr/parser'
 require 'models/blog'
 require 'models/post'
 require 'models/page'
+require 'models/theme_snippet'
 
 configure :development do
   dbconfig = YAML.load(File.read('config/database.yml'))
