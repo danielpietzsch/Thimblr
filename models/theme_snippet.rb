@@ -1,5 +1,7 @@
 class ThemeSnippet < String
   
+  PostTypes = ["Text", "Regular", "Photo", "Photoset", "Quote", "Link", "Chat", "Conversation", "Audio", "Video", "Answer"]
+  
   # The regular expression to match a block and its contents
   # matchdata $2 will be the content of the block
   def ThemeSnippet.block_regex_pattern_for(block_name)  
@@ -40,6 +42,44 @@ class ThemeSnippet < String
       puts "removed!"
     else
       puts "no match found!"
+    end
+  end
+  
+  # pass in a post_type and the posts template ({block:Posts})
+  # will render the block of the post_type and remove all others
+  def only_render_block_for_post_type(post_type)
+    if post_type == 'Text' and !self.block_exists?(post_type)
+      if self.block_exists?('Regular')
+        post_type = 'Regular'
+      end
+    elsif post_type == 'Regular' and !self.block_exists?(post_type)
+      if self.block_exists?('Text')
+        post_type = 'Text'
+      end
+    end
+    
+    if post_type == 'Chat' and !self.block_exists?(post_type)
+      if self.block_exists?('Conversation')
+        post_type = 'Conversation'
+      end
+    elsif post_type == 'Conversation' and !self.block_exists?(post_type)
+      if self.block_exists?('Chat')
+        post_type = 'Chat'
+      end
+    end
+    
+    types_to_remove = PostTypes.reject { |type| type == post_type }
+    
+    types_to_remove.each { |type| self.strip_block(type) }
+    
+    self.render_block post_type, nil
+  end
+  
+  def block_exists?(block_name)
+    if self.match(ThemeSnippet.block_regex_pattern_for(block_name))
+      true
+    else
+      false
     end
   end
   

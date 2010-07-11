@@ -4,7 +4,6 @@ require 'nokogiri'
 require 'active_support'
 
 # OPTIMIZE use options hashes for improved readability
-# Refactor a lot!
 
   class Parser                    
     Defaults = {
@@ -24,8 +23,6 @@ require 'active_support'
       'PortraitURL-96'     => "http://assets.tumblr.com/images/default_avatar_96.gif",
       'PortraitURL-128'    => "http://assets.tumblr.com/images/default_avatar_128.gif"
     }
-    
-    PostTypes = ["Text", "Regular", "Photo", "Photoset", "Quote", "Link", "Chat", "Conversation", "Audio", "Video", "Answer"]
     
     # loads default data, no matter what the sample data is.
     # this gives data from imported blogs some more stuff, since an un-authenticated API call doesn't reveal all data
@@ -147,7 +144,7 @@ require 'active_support'
         case post.post_type
         when 'Regular', 'Text'
           
-          only_render_block_for_post_type(post.post_type, template) # TODO Regular or Text
+          template.only_render_block_for_post_type post.post_type # TODO Regular or Text
           
           if post.content[:'regular-title'].nil?
             template.strip_block "Title"
@@ -160,7 +157,7 @@ require 'active_support'
           
         when 'Photo'
           
-          only_render_block_for_post_type("Photo", template)
+          template.only_render_block_for_post_type "Photo"
           
           template.replace_variable "PhotoURL-500", post.content[:photo_url_500]
           template.replace_variable "PhotoURL-400", post.content[:photo_url_400]
@@ -198,11 +195,11 @@ require 'active_support'
         # TODO render photoset posts
         when 'Photoset'
           
-          only_render_block_for_post_type("Photoset")
+          @theme.only_render_block_for_post_type "Photoset"
           
         when 'Quote'
           
-          only_render_block_for_post_type("Quote", template)
+          template.only_render_block_for_post_type "Quote"
           
           template.replace_variable "Quote", post.content[:"quote-text"]
           template.replace_variable "Length", "medium" # TODO use 'real' values
@@ -216,7 +213,7 @@ require 'active_support'
           
         when 'Link'
           
-          only_render_block_for_post_type("Link", template)
+          template.only_render_block_for_post_type "Link"
           
           template.replace_variable "URL", post.content[:'link-url']
           template.replace_variable "Name", post.content[:'link-text'] || post.content[:'link-url']
@@ -232,7 +229,7 @@ require 'active_support'
         #TODO render chat posts 
         when 'Chat', 'Conversation'
           
-          only_render_block_for_post_type(post.post_type, template)
+          template.only_render_block_for_post_type post.post_type
           
           if post.content[:'conversation-title'].present?
             template.render_block "Title", nil
@@ -268,7 +265,7 @@ require 'active_support'
           
         when 'Audio'
           
-          only_render_block_for_post_type("Audio", template)
+          template.only_render_block_for_post_type "Audio"
           
           if post.content[:'audio-caption'].present?
             template.render_block "Caption", nil
@@ -300,7 +297,7 @@ require 'active_support'
           
         when 'Video'
           
-          only_render_block_for_post_type "Video", template
+          template.only_render_block_for_post_type "Video"
           
           if post.content[:'video-caption'].present?
             template.render_block "Caption", nil
@@ -316,7 +313,7 @@ require 'active_support'
           
         when 'Answer'
           
-          only_render_block_for_post_type "Answer", template
+          template.only_render_block_for_post_type "Answer"
         
           template.replace_variable "Question", post.content[:question]
           template.replace_variable "Answer", post.content[:answer]
@@ -394,46 +391,6 @@ require 'active_support'
       end
       
       @theme.render_block "Posts", all_rendered_posts
-    end
-    
-    
-    # pass in a post_type and the posts template ({block:Posts})
-    # will render the block of the post_type and remove all others
-    def only_render_block_for_post_type(post_type, posts_template)
-      if post_type == 'Text' and !block_exists?(post_type, posts_template)
-        if block_exists?('Regular', posts_template)
-          post_type = 'Regular'
-        end
-      elsif post_type == 'Regular' and !block_exists?(post_type, posts_template)
-        if block_exists?('Text', posts_template)
-          post_type = 'Text'
-        end
-      end
-      
-      if post_type == 'Chat' and !block_exists?(post_type, posts_template)
-        if block_exists?('Conversation', posts_template)
-          post_type = 'Conversation'
-        end
-      elsif post_type == 'Conversation' and !block_exists?(post_type, posts_template)
-        if block_exists?('Chat', posts_template)
-          post_type = 'Chat'
-        end
-      end
-      
-      types_to_remove = PostTypes.reject { |type| type == post_type }
-      
-      types_to_remove.each { |type| posts_template.strip_block(type) }
-      
-      posts_template.render_block post_type, nil
-    end
-    
-    
-    def block_exists?(block_name, string = @theme)
-      if string.match(block_regex_pattern_for(block_name))
-        true
-      else
-        false
-      end
     end
     
     
