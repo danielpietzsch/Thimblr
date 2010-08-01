@@ -9,7 +9,7 @@ class ThemeSnippet < String
   
   # The regular expression to match a block and its contents
   # matchdata $2 will be the content of the block
-  def ThemeSnippet.block_regex_pattern_for(block_name)  
+  def self.block_regex_pattern_for(block_name)  
     Regexp.new(/\{block:(#{block_name})\}((.|\s)*?)\{\/block:(#{block_name})\}/i)
   end
   
@@ -88,15 +88,11 @@ class ThemeSnippet < String
   # returns the contents of the provided block
   def fetch_content_of_block(block_name)
     self.match(ThemeSnippet.block_regex_pattern_for(block_name))
-    block_content = $2 #@theme.match(ThemeSnippet.block_regex_pattern_for(block_name))[2]
+    block_content = $2
   end
   
   def block_exists?(block_name)
-    if self.match(ThemeSnippet.block_regex_pattern_for(block_name))
-      true
-    else
-      false
-    end
+    self.match(ThemeSnippet.block_regex_pattern_for(block_name)) ? true : false
   end
   
 end

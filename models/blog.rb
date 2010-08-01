@@ -8,9 +8,7 @@ class Blog < ActiveRecord::Base
   has_many :posts, :dependent => :destroy
   has_many :pages, :dependent => :destroy
   
-  
-  def self.find_or_import_by_name(username)  
-    
+  def self.find_or_import_by_name(username)
     return self.find_by_name(username, :include => [:posts, :pages]) if self.exists?(:name => username)
     
     begin
@@ -106,6 +104,5 @@ class Blog < ActiveRecord::Base
       # No Pages found. Didn't import anything.
     end
   end # of import_pages
-  
-  
+
 end

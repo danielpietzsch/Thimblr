@@ -74,204 +74,29 @@ class Parser
     @groupmembers = YAML::load(open("config/groupmembers.yml"))
   end
   
-  # TODO divide this method into several smaller methods
   def render_posts
     posts_template = @theme.fetch_content_of_block("Posts")
   
-    #stores all rendered posts, concatenated together
+    # will store all rendered posts, concatenated together
     all_rendered_posts = ThemeSnippet.new
-    template = ThemeSnippet.new
+    
+    # for every post to render, posts_template will be duplicated, modified for the specific post
+    # and stored in all_rendered_posts
+    template           = ThemeSnippet.new
     
     @blog.posts.each do |post|
       template = posts_template.dup
       
       case post.post_type
-      when 'Regular', 'Text'
-        
-        template.only_render_block_for_post_type post.post_type # TODO Regular or Text
-        
-        if post.content[:'regular-title'].nil?
-          template.strip_block "Title"
-        else
-          template.render_block "Title", nil
-          template.replace_variable "Title", post.content[:'regular-title']
-        end
-        
-        template.replace_variable "Body", post.content[:'regular-body']
-        
-      when 'Photo'
-        
-        template.only_render_block_for_post_type "Photo"
-        
-        template.replace_variable "PhotoURL-500", post.content[:photo_url_500]
-        template.replace_variable "PhotoURL-400", post.content[:photo_url_400]
-        template.replace_variable "PhotoURL-250", post.content[:photo_url_250]
-        template.replace_variable "PhotoURL-100", post.content[:photo_url_100]
-        template.replace_variable "PhotoURL-75sq", post.content[:photo_url_75]
-        template.replace_variable "PhotoURL-HighRes", post.content[:photo_url_1280]
-        
-        if post.content[:'photo-link-url'].nil?
-          template.strip_variable "LinkOpenTag"
-          template.strip_variable "LinkCloseTag"
-          template.strip_variable "LinkURL"
-        else
-          template.replace_variable "LinkOpenTag", "<a href='post.content[:'photo-link-url']'>"
-          template.replace_variable "LinkCloseTag", '</a>'
-          template.replace_variable "LinkURL", post.content[:'photo-link-url']
-        end
-        
-        if post.content[:'photo-caption'].nil?
-          template.strip_block "Caption"
-          template.strip_variable "PhotoAlt"
-        else
-          template.render_block "Caption", nil
-          template.replace_variable "Caption", post.content[:'photo-caption']
-          # OPTIMIZE wrap regex in meaningful method name!?
-          template.replace_variable "PhotoAlt", post.content[:'photo-caption'].gsub(/\<\/?[^\>]*\>/, "")
-        end
-        
-        if post.content[:photo_url_1280].present? and post.content[:photo_url_1280] != post.content[:photo_url_500]
-          template.render_block "HighRes", nil
-        else
-          template.strip_block "HighRes"
-        end
-        
-      # TODO render photoset posts
-      when 'Photoset'
-        
-        @theme.only_render_block_for_post_type "Photoset"
-        
-      when 'Quote'
-        
-        template.only_render_block_for_post_type "Quote"
-        
-        template.replace_variable "Quote", post.content[:"quote-text"]
-        template.replace_variable "Length", "medium" # TODO use 'real' values
-        
-        if post.content[:'quote-source'].present?
-          template.render_block "Source", nil
-          template.replace_variable "Source", post.content[:'quote-source']
-        else
-          template.strip_block "Source"
-        end
-        
-      when 'Link'
-        
-        template.only_render_block_for_post_type "Link"
-        
-        template.replace_variable "URL", post.content[:'link-url']
-        template.replace_variable "Name", post.content[:'link-text'] || post.content[:'link-url']
-        template.replace_variable "Target", "target=\"_blank\""
-        
-        if post.content[:'link-description'].present?
-          template.render_block "Description", nil
-          template.replace_variable "Description", post.content[:'link-description']
-        else
-          template.strip_block "Description"
-        end
-        
-      #TODO render chat posts 
-      when 'Chat', 'Conversation'
-        
-        template.only_render_block_for_post_type post.post_type
-        
-        if post.content[:'conversation-title'].present?
-          template.render_block "Title", nil
-          template.replace_variable "Title", post.content[:'conversation-title']
-        else
-          template.strip_block "Title"
-        end
-        
-
-        line_template = @theme.fetch_content_of_block("Lines")
-
-        # stores the concatenated result of all the rendered following_templates
-        all_lines = ThemeSnippet.new
-
-        post.content[:lines].each_with_index do |line, i|
-          temp = line_template.dup
-          
-          if line[:label].present?
-            temp.render_block "Label", nil
-            temp.replace_variable "Label", line[:label]
-            temp.replace_variable "Name", line[:name]
-          else
-            temp.strip_block "Label"
-          end
-      
-          temp.replace_variable "Line", line[:line]
-          temp.replace_variable "Alt", i % 2 == 0 ? 'even' : 'odd'
-
-          all_lines += temp
-        end
-
-        template.render_block "Lines", all_lines
-        
-      when 'Audio'
-        
-        template.only_render_block_for_post_type "Audio"
-        
-        if post.content[:'audio-caption'].present?
-          template.render_block "Caption", nil
-          template.replace_variable "Caption", post.content[:'audio-caption']
-        else
-          template.strip_block "Caption"
-        end
-        
-        template.replace_variable "AudioPlayer", post.content[:'audio-player']
-        template.replace_variable "AudioPlayerWhite", post.content[:'audio-player']
-        template.replace_variable "AudioPlayerGrey", post.content[:'audio-player']
-        template.replace_variable "AudioPlayerBlack", post.content[:'audio-player']
-        
-        # TODO {RawAudioUrl}
-        
-        template.replace_variable "PlayCount", post.audio_plays.to_s
-        # see http://rubyforge.org/snippet/detail.php?type=snippet&id=8
-        template.replace_variable "FormattedPlayCount", post.audio_plays.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2')
-        # OPTIMIZE make proper pluralization
-        template.replace_variable "PlayCountWithLabel", post.audio_plays.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2') + " plays"
-        
-        template.strip_block "ExternalAudio" # TODO find out how to render this properly
-        
-        # TODO find out how to read ID3 tags and render this properly
-        template.strip_block "AlbumArt"
-        template.strip_block "Artist"
-        template.strip_block "Album"
-        template.strip_block "TrackName"
-        
-      when 'Video'
-        
-        template.only_render_block_for_post_type "Video"
-        
-        if post.content[:'video-caption'].present?
-          template.render_block "Caption", nil
-          template.replace_variable "Caption", post.content[:'video-caption']
-        else
-          template.strip_block "Caption"
-        end
-        
-        # TODO fix the sizes
-        template.replace_variable "Video-500", post.content[:'video-player']
-        template.replace_variable "Video-400", post.content[:'video-player']
-        template.replace_variable "Video-250", post.content[:'video-player']
-        
-      when 'Answer'
-        
-        template.only_render_block_for_post_type "Answer"
-      
-        template.replace_variable "Question", post.content[:question]
-        template.replace_variable "Answer", post.content[:answer]
-        template.replace_variable "Asker", "Anonymous"
-        
-        template.replace_variable "AskerPortraitUrl-16", 'http://assets.tumblr.com/images/default_avatar_16.gif'
-        template.replace_variable "AskerPortraitUrl-24", 'http://assets.tumblr.com/images/default_avatar_24.gif'
-        template.replace_variable "AskerPortraitUrl-30", 'http://assets.tumblr.com/images/default_avatar_30.gif'
-        template.replace_variable "AskerPortraitUrl-40", 'http://assets.tumblr.com/images/default_avatar_40.gif'
-        template.replace_variable "AskerPortraitUrl-48", 'http://assets.tumblr.com/images/default_avatar_48.gif'
-        template.replace_variable "AskerPortraitUrl-64", 'http://assets.tumblr.com/images/default_avatar_64.gif'
-        template.replace_variable "AskerPortraitUrl-96", 'http://assets.tumblr.com/images/default_avatar_96.gif'
-        template.replace_variable "AskerPortraitUrl-128", 'http://assets.tumblr.com/images/default_avatar_128.gif'
-      
+      when 'Regular', 'Text'      then render_text_post(post, template)
+      when 'Photo'                then render_photo_post(post, template)
+      when 'Photoset'             then render_photoset_post(post, template)
+      when 'Quote'                then render_quote_post(post, template)
+      when 'Link'                 then render_link_post(post, template)
+      when 'Chat', 'Conversation' then render_chat_post(post, template)
+      when 'Audio'                then render_audio_post(post, template)
+      when 'Video'                then render_video_post(post, template)
+      when 'Answer'               then render_answer_post(post, template)
       end # of case
       
       # stuff for all post types
@@ -279,62 +104,252 @@ class Parser
       template.replace_variable "ShortURL", "http://tumblr.com/xpv5qtavm"
       template.replace_variable "PostID", post.postid
       
-      # Dates http://www.tumblr.com/docs/en/custom_themes#dates
-      template.render_block "Date", nil
-      template.replace_variable "DayOfMonth", post.date.day.to_s
-      template.replace_variable "DayOfMonthWithZero", post.date.strftime("%d")
-      template.replace_variable "DayOfWeek", post.date.strftime("%A")
-      template.replace_variable "ShortDayOfWeek", post.date.strftime("%a")
-      template.replace_variable "DayOfWeekNumber", (post.date.strftime("%w").to_i + 1).to_s
-      template.replace_variable "DayOfMonthSuffix", "th" #FIXME fix day suffix
-      template.replace_variable "DayOfYear", post.date.strftime("%j")
-      template.replace_variable "WeekOfYear", post.date.strftime("%W")
-      template.replace_variable "Month", post.date.strftime("%B")
-      template.replace_variable "ShortMonth", post.date.strftime("%b")
-      template.replace_variable "MonthNumber", post.date.month.to_s
-      template.replace_variable "MonthNumberWithZero", post.date.strftime("%w")
-      template.replace_variable "Year", post.date.strftime("%w")
-      template.replace_variable "ShortYear", post.date.strftime("%y")
-      template.replace_variable "CapitalAmPm", post.date.strftime("%p")
-      template.replace_variable "AmPm", post.date.strftime("%p").downcase
-      template.replace_variable "12Hour", post.date.strftime("%I").sub(/^0/,"")
-      template.replace_variable "24Hour", post.date.hour.to_s
-      template.replace_variable "12HourWithZero", post.date.strftime("%I")
-      template.replace_variable "24HourWithZero", post.date.strftime("%H")
-      template.replace_variable "Minutes", post.date.strftime("%M")
-      template.replace_variable "Seconds", post.date.strftime("%S")
-      template.replace_variable "Beats", ((post.date.usec / 1000).round).to_s
-      template.replace_variable "TimeAgo", "some time ago"
-      template.replace_variable "Timestamp", post.unix_timestamp
-      
-      # Tags
-      tag_template = @theme.fetch_content_of_block("Tags")
-      
-      if post.content[:tags].present? and tag_template.present?
-        template.render_block "HasTags", nil
-
-        # stores the concatenated result of all the rendered following_templates
-        all_tags = ThemeSnippet.new
-
-        post.content[:tags].each do |tag|
-          temp = tag_template.dup
-          temp.replace_variable "Tag", tag
-          temp.replace_variable "URLSafeTag", tag.underscore
-          temp.replace_variable "TagURL", "/tagged/#{tag}"
-          temp.replace_variable "TagURLChrono", "/tagged/#{tag}"
-
-          all_tags += temp
-        end
-
-        template.render_block "Tags", all_tags
-      else
-        template.strip_block "HasTags"
-      end
+      render_post_dates(post, template)
+      render_post_tags(post, template)
 
       all_rendered_posts += template
     end
     
     @theme.render_block "Posts", all_rendered_posts
+  end
+  
+  def render_text_post(post, template)
+    template.only_render_block_for_post_type post.post_type # TODO Regular or Text
+    
+    if post.content[:'regular-title'].nil?
+      template.strip_block "Title"
+    else
+      template.render_block "Title", nil
+      template.replace_variable "Title", post.content[:'regular-title']
+    end
+    
+    template.replace_variable "Body", post.content[:'regular-body']
+  end
+  
+  def render_photo_post(post, template)
+    template.only_render_block_for_post_type "Photo"
+    
+    template.replace_variable "PhotoURL-500", post.content[:photo_url_500]
+    template.replace_variable "PhotoURL-400", post.content[:photo_url_400]
+    template.replace_variable "PhotoURL-250", post.content[:photo_url_250]
+    template.replace_variable "PhotoURL-100", post.content[:photo_url_100]
+    template.replace_variable "PhotoURL-75sq", post.content[:photo_url_75]
+    template.replace_variable "PhotoURL-HighRes", post.content[:photo_url_1280]
+    
+    if post.content[:'photo-link-url'].nil?
+      template.strip_variable "LinkOpenTag"
+      template.strip_variable "LinkCloseTag"
+      template.strip_variable "LinkURL"
+    else
+      template.replace_variable "LinkOpenTag", "<a href='post.content[:'photo-link-url']'>"
+      template.replace_variable "LinkCloseTag", '</a>'
+      template.replace_variable "LinkURL", post.content[:'photo-link-url']
+    end
+    
+    if post.content[:'photo-caption'].nil?
+      template.strip_block "Caption"
+      template.strip_variable "PhotoAlt"
+    else
+      template.render_block "Caption", nil
+      template.replace_variable "Caption", post.content[:'photo-caption']
+      # OPTIMIZE wrap regex in meaningful method name!?
+      template.replace_variable "PhotoAlt", post.content[:'photo-caption'].gsub(/\<\/?[^\>]*\>/, "")
+    end
+    
+    if post.content[:photo_url_1280].present? and post.content[:photo_url_1280] != post.content[:photo_url_500]
+      template.render_block "HighRes", nil
+    else
+      template.strip_block "HighRes"
+    end
+  end
+  
+  # TODO render photoset posts
+  def render_photoset_post(post, template)
+    @theme.only_render_block_for_post_type "Photoset"
+  end
+  
+  def render_quote_post(post, template)
+    template.only_render_block_for_post_type "Quote"
+    
+    template.replace_variable "Quote", post.content[:"quote-text"]
+    template.replace_variable "Length", "medium" # TODO use 'real' values
+    
+    if post.content[:'quote-source'].present?
+      template.render_block "Source", nil
+      template.replace_variable "Source", post.content[:'quote-source']
+    else
+      template.strip_block "Source"
+    end
+  end
+  
+  def render_link_post(post, template)
+    template.only_render_block_for_post_type "Link"
+    
+    template.replace_variable "URL", post.content[:'link-url']
+    template.replace_variable "Name", post.content[:'link-text'] || post.content[:'link-url']
+    template.replace_variable "Target", "target=\"_blank\""
+    
+    if post.content[:'link-description'].present?
+      template.render_block "Description", nil
+      template.replace_variable "Description", post.content[:'link-description']
+    else
+      template.strip_block "Description"
+    end
+  end
+  
+  def render_chat_post(post, template)
+    template.only_render_block_for_post_type post.post_type
+    
+    if post.content[:'conversation-title'].present?
+      template.render_block "Title", nil
+      template.replace_variable "Title", post.content[:'conversation-title']
+    else
+      template.strip_block "Title"
+    end
+    
+    line_template = @theme.fetch_content_of_block("Lines")
+
+    # stores the concatenated result of all the rendered following_templates
+    all_lines = ThemeSnippet.new
+
+    post.content[:lines].each_with_index do |line, i|
+      temp = line_template.dup
+      
+      if line[:label].present?
+        temp.render_block "Label", nil
+        temp.replace_variable "Label", line[:label]
+        temp.replace_variable "Name", line[:name]
+      else
+        temp.strip_block "Label"
+      end
+  
+      temp.replace_variable "Line", line[:line]
+      temp.replace_variable "Alt", i % 2 == 0 ? 'even' : 'odd'
+
+      all_lines += temp
+    end
+
+    template.render_block "Lines", all_lines
+  end
+  
+  def render_audio_post(post, template)
+    template.only_render_block_for_post_type "Audio"
+    
+    if post.content[:'audio-caption'].present?
+      template.render_block "Caption", nil
+      template.replace_variable "Caption", post.content[:'audio-caption']
+    else
+      template.strip_block "Caption"
+    end
+    
+    template.replace_variable "AudioPlayer", post.content[:'audio-player']
+    template.replace_variable "AudioPlayerWhite", post.content[:'audio-player']
+    template.replace_variable "AudioPlayerGrey", post.content[:'audio-player']
+    template.replace_variable "AudioPlayerBlack", post.content[:'audio-player']
+    
+    # TODO {RawAudioUrl}
+    
+    template.replace_variable "PlayCount", post.audio_plays.to_s
+    # see http://rubyforge.org/snippet/detail.php?type=snippet&id=8
+    template.replace_variable "FormattedPlayCount", post.audio_plays.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2')
+    # OPTIMIZE make proper pluralization
+    template.replace_variable "PlayCountWithLabel", post.audio_plays.to_s.gsub(/(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/,'\1,\2') + " plays"
+    
+    template.strip_block "ExternalAudio" # TODO find out how to render this properly
+    
+    # TODO find out how to read ID3 tags and render this properly
+    template.strip_block "AlbumArt"
+    template.strip_block "Artist"
+    template.strip_block "Album"
+    template.strip_block "TrackName"
+  end
+  
+  def render_video_post(post, template)
+    template.only_render_block_for_post_type "Video"
+    
+    if post.content[:'video-caption'].present?
+      template.render_block "Caption", nil
+      template.replace_variable "Caption", post.content[:'video-caption']
+    else
+      template.strip_block "Caption"
+    end
+    
+    # TODO fix the sizes
+    template.replace_variable "Video-500", post.content[:'video-player']
+    template.replace_variable "Video-400", post.content[:'video-player']
+    template.replace_variable "Video-250", post.content[:'video-player']
+  end
+  
+  def render_answer_post(post, template)
+    template.only_render_block_for_post_type "Answer"
+  
+    template.replace_variable "Question", post.content[:question]
+    template.replace_variable "Answer", post.content[:answer]
+    template.replace_variable "Asker", "Anonymous"
+    
+    template.replace_variable "AskerPortraitUrl-16", 'http://assets.tumblr.com/images/default_avatar_16.gif'
+    template.replace_variable "AskerPortraitUrl-24", 'http://assets.tumblr.com/images/default_avatar_24.gif'
+    template.replace_variable "AskerPortraitUrl-30", 'http://assets.tumblr.com/images/default_avatar_30.gif'
+    template.replace_variable "AskerPortraitUrl-40", 'http://assets.tumblr.com/images/default_avatar_40.gif'
+    template.replace_variable "AskerPortraitUrl-48", 'http://assets.tumblr.com/images/default_avatar_48.gif'
+    template.replace_variable "AskerPortraitUrl-64", 'http://assets.tumblr.com/images/default_avatar_64.gif'
+    template.replace_variable "AskerPortraitUrl-96", 'http://assets.tumblr.com/images/default_avatar_96.gif'
+    template.replace_variable "AskerPortraitUrl-128", 'http://assets.tumblr.com/images/default_avatar_128.gif'
+  end
+  
+  # Dates http://www.tumblr.com/docs/en/custom_themes#dates
+  def render_post_dates(post, template)
+    template.render_block "Date", nil
+    template.replace_variable "DayOfMonth", post.date.day.to_s
+    template.replace_variable "DayOfMonthWithZero", post.date.strftime("%d")
+    template.replace_variable "DayOfWeek", post.date.strftime("%A")
+    template.replace_variable "ShortDayOfWeek", post.date.strftime("%a")
+    template.replace_variable "DayOfWeekNumber", (post.date.strftime("%w").to_i + 1).to_s
+    template.replace_variable "DayOfMonthSuffix", "th" #FIXME fix day suffix
+    template.replace_variable "DayOfYear", post.date.strftime("%j")
+    template.replace_variable "WeekOfYear", post.date.strftime("%W")
+    template.replace_variable "Month", post.date.strftime("%B")
+    template.replace_variable "ShortMonth", post.date.strftime("%b")
+    template.replace_variable "MonthNumber", post.date.month.to_s
+    template.replace_variable "MonthNumberWithZero", post.date.strftime("%w")
+    template.replace_variable "Year", post.date.strftime("%w")
+    template.replace_variable "ShortYear", post.date.strftime("%y")
+    template.replace_variable "CapitalAmPm", post.date.strftime("%p")
+    template.replace_variable "AmPm", post.date.strftime("%p").downcase
+    template.replace_variable "12Hour", post.date.strftime("%I").sub(/^0/,"")
+    template.replace_variable "24Hour", post.date.hour.to_s
+    template.replace_variable "12HourWithZero", post.date.strftime("%I")
+    template.replace_variable "24HourWithZero", post.date.strftime("%H")
+    template.replace_variable "Minutes", post.date.strftime("%M")
+    template.replace_variable "Seconds", post.date.strftime("%S")
+    template.replace_variable "Beats", ((post.date.usec / 1000).round).to_s
+    template.replace_variable "TimeAgo", "some time ago"
+    template.replace_variable "Timestamp", post.unix_timestamp
+  end
+  
+  def render_post_tags(post, template)
+    tag_template = @theme.fetch_content_of_block("Tags")
+    
+    if post.content[:tags].present? and tag_template.present?
+      template.render_block "HasTags", nil
+
+      # stores the concatenated result of all the rendered following_templates
+      all_tags = ThemeSnippet.new
+
+      post.content[:tags].each do |tag|
+        temp = tag_template.dup
+        temp.replace_variable "Tag", tag
+        temp.replace_variable "URLSafeTag", tag.underscore
+        temp.replace_variable "TagURL", "/tagged/#{tag}"
+        temp.replace_variable "TagURLChrono", "/tagged/#{tag}"
+
+        all_tags += temp
+      end
+
+      template.render_block "Tags", all_tags
+    else
+      template.strip_block "HasTags"
+    end
   end
   
   # renders or removes block 'pages', depending on whether the blog has pages or not
