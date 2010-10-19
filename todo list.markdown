@@ -5,24 +5,14 @@
  * [Likes](http://www.tumblr.com/docs/en/custom_themes#likes "Creating a custom HTML theme | Tumblr")
  * [All search vars and blocks](http://www.tumblr.com/docs/en/custom_themes#search "Creating a custom HTML theme | Tumblr")
  * [Twitter](http://www.tumblr.com/docs/en/custom_themes#twitter "Creating a custom HTML theme | Tumblr")
- * 
+ * [Notes](http://www.tumblr.com/docs/en/custom_themes#notes "Creating a custom HTML theme | Tumblr")
+ * [Group Blogs](http://www.tumblr.com/docs/en/custom_themes#group-blogs "Creating a custom HTML theme | Tumblr")
+ * [Reblogs](http://www.tumblr.com/docs/en/custom_themes#reblogs "Creating a custom HTML theme | Tumblr")
 
- @theme.strip_block "DayPage"
- @theme.strip_block "DayPagination"
- @theme.strip_block "PreviousDayPage"
- @theme.strip_block "NextDayPage"
- @theme.strip_block "PostNotes"
- @theme.strip_block "NoteCount"
- @theme.strip_block "GroupMembers"
- @theme.strip_block "GroupMember"
- @theme.strip_block "RebloggedFrom"
- @theme.strip_block "Reblog"
- @theme.render_block "NotReblog" # OPTIMIZE currently only enabled because testing with Redux theme
- @theme.strip_block "FromMobile"
- @theme.strip_block "FromBookmarklet"
+There seem to be some old or deprecated variables and blocks that don't appear in the current [Tumblr Theme docs](http://www.tumblr.com/docs/en/custom_themes "Creating a custom HTML theme | Tumblr"). :-(
 
-## Supporting more pages
+## Supporting pages
 
- * 
- * [TagPages](http://www.tumblr.com/docs/en/custom_themes#tag-pages "Creating a custom HTML theme | Tumblr")
- * [DayPages](http://www.tumblr.com/docs/en/custom_themes#day-pages "Creating a custom HTML theme | Tumblr")
+ * [Pages](http://www.tumblr.com/docs/en/custom_themes#pages "Creating a custom HTML theme | Tumblr")
+ * [Tag Pages](http://www.tumblr.com/docs/en/custom_themes#tag-pages "Creating a custom HTML theme | Tumblr")
+ * [Day Pages](http://www.tumblr.com/docs/en/custom_themes#day-pages "Creating a custom HTML theme | Tumblr")
